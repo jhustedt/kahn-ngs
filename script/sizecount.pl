@@ -23,7 +23,7 @@ $SIG{TERM} = \&End_Handler;
 
 =head1 NAME
 
-  sizes.pl - A writeall script to sort sequences by index and infer the sizes of the template DNA.
+  sizecount.pl - A writeall script to sort sequences by index and infer the sizes of the template DNA.
 
 =head1 SYNOPSIS
 
