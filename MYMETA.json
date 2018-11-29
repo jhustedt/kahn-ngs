@@ -1,0 +1,64 @@
+{
+   "abstract" : "A small script for counting DNA sequencing fragments of specific sizes based on their sequence.",
+   "author" : [
+      "Ashton Trey Belew <abelew@gmail.com>"
+   ],
+   "dynamic_config" : 0,
+   "generated_by" : "Module::Build version 0.4224",
+   "license" : [
+      "perl_5"
+   ],
+   "meta-spec" : {
+      "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
+      "version" : 2
+   },
+   "name" : "sizecount",
+   "prereqs" : {
+      "build" : {
+         "requires" : {
+            "Module::Build" : "0.3601"
+         }
+      },
+      "configure" : {
+         "requires" : {
+            "Module::Build" : "0.3601"
+         }
+      },
+      "runtime" : {
+         "requires" : {
+            "Bio::Seq" : "0",
+            "Bio::SeqIO" : "0",
+            "Cwd" : "0",
+            "File::Find" : "0",
+            "File::Path" : "0",
+            "File::ShareDir" : "1.00",
+            "File::Spec" : "0",
+            "FileHandle" : "0",
+            "Getopt::Long" : "0",
+            "PerlIO" : "0",
+            "PerlIO::gzip" : "0",
+            "Pod::Usage" : "0",
+            "String::Approx" : "0",
+            "autodie" : "0"
+         }
+      },
+      "test" : {
+         "requires" : {
+            "Test::More" : "0.88"
+         }
+      }
+   },
+   "provides" : {
+      "sizecount" : {
+         "file" : "lib/sizecount.pm"
+      }
+   },
+   "release_status" : "stable",
+   "resources" : {
+      "license" : [
+         "http://dev.perl.org/licenses/"
+      ]
+   },
+   "version" : "20181128",
+   "x_serialization_backend" : "JSON::PP version 2.97001"
+}

@@ -1,0 +1,108 @@
+## Each index is a sequence followed by a 3 word phrase: region_size_direction
+## From 20181102: right>helical; left>stepcyc; middle>variable;
+## An additional index has been added "stepsynth"
+## For a cyclized molecule fwd: stepcyc+helical+variable+stepsynth
+## For a cyclized molecule rev: stepsynth+variable+helical+stepcyc
+## helical variation (part of the original library to look over a full helical repeat for each size class
+CGGAATGGTAGCTCTCGAT  helical_10_fwd
+CGGAATGGTACCTTCGAT  helical_09_fwd
+CGGAATGGTAACTCGAT  helical_08_fwd
+CGGAATGCTATTCGAT  helical_07_fwd
+CGGACTGGTATCGAT  helical_06_fwd
+CGGACTGCTTCGAT  helical_05_fwd
+CGGACTGATCGAT  helical_04_fwd
+CGGATGTTCGAT  helical_03_fwd
+CGGAGTTCGAT  helical_02_fwd
+CGGACTCGAT  helical_01_fwd
+CGGATCGAT  helical_00_fwd
+ATCGAGAGCTACCATTCCG  helical_10_rev
+ATCGAAGGTACCATTCCG  helical_09_rev
+ATCGAGTTACCATTCCG  helical_08_rev
+ATCGAATAGCATTCCG  helical_07_rev
+ATCGATACCAGTCCG  helical_06_rev
+ATCGAAGCAGTCCG  helical_05_rev
+ATCGATCAGTCCG  helical_04_rev
+ATCGAACATCCG  helical_03_rev
+ATCGAACTCCG  helical_02_rev
+ATCGAGTCCG  helical_01_rev
+ATCGATCCG  helical_00_rev
+
+## large step-wise addition on cyclization side (XhoI)
+GAGATATACGAGGAG  stepcyc_47_fwd
+CGAAGTGGTCTGCAA  stepcyc_77_fwd
+CTCTTACTGTCATGC  stepcyc_107_fwd
+CTCCTCGTATATCTC  stepcyc_47_rev
+TTGCAGACCACTTCG  stepcyc_77_rev
+GCATGACAGTAAGAG  stepcyc_107_rev
+## same portion on synthesis side (between BstEII and large variable region)
+CCTGACTCCCCGTCG  stepsynth_47_fwd
+CAGCCGGAAGGCCGA  stepsynth_77_fwd
+TTATGGCAGCACTGC  stepsynth_107_fwd
+CGACGGGGAGTCAGG  stepsynth_47_rev
+TCGGCCTTCCGGCTG  stepsynth_77_rev
+GCAGTGCTGCCATAA  stepsynth_107_rev
+## if stepsynth+stepcyc match in # & direction, they are from the same addition, if they are different, this molecule is bimolecular.
+
+## large variable region
+ACCCATTAGGTCCAGCAGGCATTGCAGTCAGACGCA  variable_30_rev
+ACCCATTAGCTCCAGCAGGCATTGCAGTCAGAGCA  variable_29_rev
+ACCCATTAGATCCAGCAGGCATTGCAGTCAGGCA  variable_28_rev
+ACCCATGAGTTCCAGCAGGCATTGCAGTCAGCA  variable_27_rev
+ACCCATGAGGTCCAGCAGGCATTGCAGTCGCA  variable_26_rev
+ACCCATGAGCTCCAGCAGGCATTGCAGTGCA  variable_25_rev
+ACCCATGAGATCCAGCAGGCATTGCAGGCA  variable_24_rev
+ACCCATCAGTTCCAGCAGGCATTGCAGCA  variable_23_rev
+ACCCATCAGGTCCAGCAGGCATTGCGCA  variable_22_rev
+ACCCATCAGCTCCAGCAGGCATTGGCA  variable_21_rev
+ACCCATCAGATCCAGCAGGCATTGCA  variable_20_rev
+ACCCATAAGTTCCAGCAGGCATGCA  variable_19_rev
+ACCCATAAGGTCCAGCAGGCAGCA  variable_18_rev
+ACCCATAAGCTCCAGCAGGCGCA  variable_17_rev
+ACCCATAAGATCCAGCAGGGCA  variable_16_rev
+ACCAATTAGTTCCAGCAGGCA  variable_15_rev
+ACCAATTAGGTCCAGCAGCA  variable_14_rev
+ACCAATTAGCTCCAGCGCA  variable_13_rev
+ACCAATTAGATCCAGGCA  variable_12_rev
+ACCAATGAGTTCCAGCA  variable_11_rev
+ACCAATGAGGTCCGCA  variable_10_rev
+ACCAATGAGCTCGCA  variable_09_rev
+ACCAATGAGATGCAG  variable_08_rev
+ACCAATCAGTGCAGT  variable_07_rev
+CACCCATGAGGCAGT  variable_06_rev
+TCACCCATCAGCAGT  variable_05_rev
+GTCACCCATAGCAGT  variable_04_rev
+GGTCACCTATGCAGT  variable_03_rev
+GGTCACCGAGCAGTT  variable_02_rev
+GGTCACCCGCAGTTG  variable_01_rev
+GGTCACCGCAGTTGA  variable_00_rev
+TGCGTCTGACTGCAATGCCTGCTGGACCTAATGGGT  variable_30_fwd
+TGCTCTGACTGCAATGCCTGCTGGAGCTAATGGGT  variable_29_fwd
+TGCCTGACTGCAATGCCTGCTGGATCTAATGGGT  variable_28_fwd
+TGCTGACTGCAATGCCTGCTGGAACTCATGGGT  variable_27_fwd
+TGCGACTGCAATGCCTGCTGGACCTCATGGGT  variable_26_fwd
+TGCACTGCAATGCCTGCTGGAGCTCATGGGT  variable_25_fwd
+TGCCTGCAATGCCTGCTGGATCTCATGGGT  variable_24_fwd
+TGCTGCAATGCCTGCTGGAACTGATGGGT  variable_23_fwd
+TGCGCAATGCCTGCTGGACCTGATGGGT  variable_22_fwd
+TGCCAATGCCTGCTGGAGCTGATGGGT  variable_21_fwd
+TGCAATGCCTGCTGGATCTGATGGGT  variable_20_fwd
+TGCATGCCTGCTGGAACTTATGGGT  variable_19_fwd
+TGCTGCCTGCTGGACCTTATGGGT  variable_18_fwd
+TGCGCCTGCTGGAGCTTATGGGT  variable_17_fwd
+TGCCCTGCTGGATCTTATGGGT  variable_16_fwd
+TGCCTGCTGGAACTAATTGGT  variable_15_fwd
+TGCTGCTGGACCTAATTGGT  variable_14_fwd
+TGCGCTGGAGCTAATTGGT  variable_13_fwd
+TGCCTGGATCTAATTGGT  variable_12_fwd
+TGCTGGAACTCATTGGT  variable_11_fwd
+TGCGGACCTCATTGGT  variable_10_fwd
+TGCGAGCTCATTGGT  variable_09_fwd
+CTGCATCTCATTGGT  variable_08_fwd
+ACTGCACTGATTGGT  variable_07_fwd
+ACTGCCTCATGGGTG  variable_06_fwd
+ACTGCTGATGGGTGA  variable_05_fwd
+ACTGCTATGGGTGAC  variable_04_fwd
+ACTGCATAGGTGACC  variable_03_fwd
+AACTGCTCGGTGACC  variable_02_fwd
+CAACTGCGGGTGACC  variable_01_fwd
+TCAACTGCGGTGACC  variable_00_fwd

@@ -1,0 +1,7 @@
+BUILD.PL
+dist.ini
+lib/sizecount.pm
+MANIFEST			This list of files
+script/sizecount.pl
+share/index.txt
+share/test.fastq

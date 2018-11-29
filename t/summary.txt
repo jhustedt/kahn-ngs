@@ -1,0 +1,60 @@
+82 reads were observed in total, of these:
+The read type: helical_fwd was observed: 37 times.
+The read type: helical_rev was observed: 44 times.
+The read type: stepcyc_fwd was observed: 30 times.
+The read type: stepcyc_rev was observed: 20 times.
+The read type: stepsynth_fwd was observed: 17 times.
+The read type: stepsynth_rev was observed: 20 times.
+The read type: variable_fwd was observed: 43 times.
+The read type: variable_rev was observed: 56 times.
+36 single-index reads were observed, including:
+The read type: stepcyc_fwd was observed: 22 times.
+The read type: stepcyc_rev was observed: 14 times.
+5 double-index reads were observed, including:
+The read type: stepcyc_fwd was observed: 3 times.
+The read type: stepcyc_rev was observed: 2 times.
+The read type: stepsynth_fwd was observed: 3 times.
+The read type: stepsynth_rev was observed: 2 times.
+2 triple-index reads were observed, including:
+The read type: helical_rev was observed: 2 times.
+The read type: stepsynth_rev was observed: 2 times.
+The read type: variable_rev was observed: 2 times.
+7 4-index reads were observed, including:
+The read type: helical_fwd was observed: 4 times.
+The read type: helical_rev was observed: 5 times.
+The read type: stepcyc_fwd was observed: 1 times.
+The read type: stepsynth_fwd was observed: 3 times.
+The read type: stepsynth_rev was observed: 2 times.
+The read type: variable_fwd was observed: 8 times.
+The read type: variable_rev was observed: 5 times.
+11 5-index reads were observed, including:
+The read type: helical_fwd was observed: 13 times.
+The read type: helical_rev was observed: 11 times.
+The read type: stepcyc_fwd was observed: 1 times.
+The read type: stepcyc_rev was observed: 2 times.
+The read type: stepsynth_fwd was observed: 3 times.
+The read type: stepsynth_rev was observed: 5 times.
+The read type: variable_fwd was observed: 8 times.
+The read type: variable_rev was observed: 12 times.
+6 6-index reads were observed, including:
+The read type: helical_fwd was observed: 6 times.
+The read type: helical_rev was observed: 8 times.
+The read type: stepcyc_fwd was observed: 1 times.
+The read type: stepsynth_fwd was observed: 3 times.
+The read type: stepsynth_rev was observed: 2 times.
+The read type: variable_fwd was observed: 7 times.
+The read type: variable_rev was observed: 9 times.
+5 7-index reads were observed, including:
+The read type: helical_fwd was observed: 7 times.
+The read type: helical_rev was observed: 5 times.
+The read type: stepcyc_fwd was observed: 1 times.
+The read type: stepcyc_rev was observed: 1 times.
+The read type: stepsynth_fwd was observed: 3 times.
+The read type: stepsynth_rev was observed: 2 times.
+The read type: variable_fwd was observed: 10 times.
+The read type: variable_rev was observed: 6 times.
+
+0 reads had a stepsynth+variable+helical+stepcyc:
+0 reads had a stepsynth+variable+helical+stepcyc and cyclized:
+0 reads had a stepcyc+stepsynth+variable+helical and not cyclized:
+0 reads had a stepsynth+variable+helical+stepcyc:
