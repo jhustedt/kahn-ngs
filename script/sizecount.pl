@@ -94,6 +94,7 @@ $SIG{TERM} = \&End_Handler;
 #options from Getopt::Long; defaults
 #we have added csv files for cyclized and not cyclized counts
 #the final option "distance" is for amatch distance, default to 0 (exact match) but added as an option to easily use the same program to allow more mis-matches.
+#Note to Trey: amatch distance of 0 is still doing fuzzy matching, not exact matching, which should happen for distance "S0"
 my %options = (
     debug => 1,
     indices => 'index.txt',
