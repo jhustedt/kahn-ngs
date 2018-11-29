@@ -23,25 +23,30 @@ $SIG{TERM} = \&End_Handler;
 
 =head1 NAME
 
-  sizecount.pl - A writeall script to sort sequences by index and infer the sizes of the template DNA.
+  sizecount.pl - A writeall script to sort sequences by index and infer the
+    sizes of the template DNA.
 
 =head1 SYNOPSIS
 
   This script only has a few useful options:
  --index  : The file defining the search strings and output files.
- --input  : Either a filename or directory containing the (relatively) raw fastq data.
- --outdir : Output directory, composed of two csv files, an output fastq file, and a summary file.
- --outfastq : Output fastq file, by default this is placed into the output directory.
-              File extension not necessary.
- --distance : amatch (Levenshtein) distance, default is 0 (perfect match)
+ --input  : Either a filename or directory containing the (relatively) raw
+    fastq data.
+ --outdir : Output directory, composed of two csv files, an output fastq file,
+    and a summary file.
+ --outfastq : Output fastq file, by default this is placed into the output
+    directory. File extension not necessary.
+ --substitution : String::Approx (Levenshtein) substitution distance, default is 0 (perfect match)
+ --insertion: Levenshtein insertion distance
+ --deletion: Levenshtein deletion distance
  --spacer : specify spacer length (default 72)
  --debug  : Print a bunch of debugging output?
 
 =head1 DESCRIPTION
 
   This was originally a demultiplexer for TNSeq data, which has a very specific and
-  illumina-incompatible (bcl2fastq) format.  It was slightly reformatted to match Jason
-  Hustedt and Jason Kahn's query which is as follows:
+  illumina-incompatible (bcl2fastq) format.  It was slightly reformatted to match
+  Jason Hustedt and Jason Kahn's query which is as follows:
 
   1. The primary goal is to observe how many of every size DNA template was incorporated into
      a sequencing library.  The implicit inference: when (DNA-size % ~10), the energetic
@@ -81,20 +86,27 @@ $SIG{TERM} = \&End_Handler;
     done) but which molecule they came from. Ideally something like:
      47-30-10,165,2000
      Where the components say that the three index sizes obtained (47, 30, and 10) built a molecule of size 165, and it was found 2000 times. Currently this is ignored and the count is solely based on size, such that 47-30-10, 77-00-10, and 77-10-00 (and all iterations 77-01-09...77-09-01) are all included into the count of 165. While it is important that this total size of DNA cyclized (or did not cyclize), I cannot currently remove bias from library input if I don't know which of the individual molecules contirbuted to the overall count.
-     Adding this logic will be complicated, but the initial searching of sequences and matching them to index files can already be done, at this point, we are looking only at the data output in the comment field. Should this be a separate program to run this type of logic?
+     Adding this logic will be complicated, but the initial searching of sequences and matching them to index files can already be done with index sequences that exactly match, at this point, we are looking only at the data output in the comment field. Should this be a separate program to run this type of logic?
 
- Updates for (2018-11-20)
+ Updates for (2018-11-28)
  1) Implemented amatch instead of direct string match for indices.
  2) the index number associated with stepsynth & stepcyc is now capable of being called upon to reference itself later for a logic check verifying they are the same index value.
     a. logic check separating unimolecular (matching) and bimolecular (not matching) stepsynth & stepcyc
- 3) added logic for sorting 6-index hits as bimolecular - counting on this is needed.
+ 3) need to add logic for sorting 6-index hits as bimolecular - counting on this is also needed.
 
+ Updates for 2018-11-29
+  Fixed: output sizes are inaccurate
+  Still needed: check for 6-index and 2-index biomolecular & counting of these
+  Still needed: appropriate separation of counting based on construction, not just final size
+  To fix: aindex/amatch is giving matches that should not be matches if only substitution is allowed.
+ 
 =cut
 
 #options from Getopt::Long; defaults
 #we have added csv files for cyclized and not cyclized counts
 #the final option "distance" is for amatch distance, default to 0 (exact match) but added as an option to easily use the same program to allow more mis-matches.
 #Note to Trey: amatch distance of 0 is still doing fuzzy matching, not exact matching, which should happen for distance "S0"
+#I changed the option from "distance" to "substitution" as this is what it actually is. I have also added "insertion" and "deletion" options, although for me I will not be using them.
 my %options = (
     debug => 1,
     indices => 'index.txt',
@@ -106,7 +118,9 @@ my %options = (
     fourhitlin_csv => 'unimolecular_linear_lengths.csv',
     bicyc_csv => 'bimolecular_cyclized_lengths.csv',
     spacer => 72,
-    distance => 0,
+    substitution => 0,
+    insertion => 0,
+    deletion => 0,
 );
 ## This is a hash counting off how many times _every_ index is observed.
 my $observed_reads = 0;
@@ -170,7 +184,9 @@ my $opt_result = GetOptions(
     "fourhitlin_csv:s" => \$options{fourhitlin_csv},
     "bicyc_csv:s" => \$options{bicyc_csv},
     "outfastq:s" => \$options{outfastq},
-    "distance:i" => \$options{distance},
+    "substitution:i" => \$options{substitution},
+    "insertion:i" => \$options{insertion},
+    "deletion:i" => \$options{deletion},
 );
 my $log = new FileHandle(">$options{outdir}/$options{summary}");
 my $unicyc_csv = new FileHandle(">$options{outdir}/$options{unicyc_csv}");
@@ -279,9 +295,17 @@ sub Sort_File_Approx {
         foreach my $index (@index_list) {
             my $info = $data->{$index};
             ## direct sequence match, without error
-            ## Note to trey - here i am trying to make it so I can vary the allowed Levenshtein distance. I set the default to 0 such that it expects exact matching if not defined.
-            my $params = [ "S$options{distance}" ];
-            my @starts = aindex($index, $params, ($sequence));
+            ## set up array for parameters for string::approx
+            my $params = [ "I$options{insertion}","D$options{deletion}","S$options{substitution}" ];
+            ##set up array for starts
+            my @starts = ();
+            ##looks at parameters & if array is empty, continue with direct match, if array is not empty, do aindex
+            if ($options{insertion} == 0 && $options{deletion} == 0 && $options{substitution} == 0) {
+                $sequence =~ m/$index/;
+                @starts = @-;
+            } else {
+            @starts = aindex($index, $params, ($sequence));
+            }
             ## if (@starts) {
             if ($starts[0] ne '-1') {
                 ## old matching, exact matching only (next two lines would replace above two lines)
@@ -372,9 +396,9 @@ my $bimol_valid = 0;
                 } elsif ($piece eq 'stepcyc' && $dir eq 'fwd') {
                     $stepcyc = $name;
                 } elsif ($piece eq 'variable' && $dir eq 'fwd') {
-                    $variable = $name
+                    $variable = $name;
                 } elsif ($piece eq 'stepsynth' && $dir eq 'fwd') {
-                    $variable = $name
+                    $stepsynth = $name;
                 }
             }
             my $final_size = $options{spacer} + $helical + $stepsynth + $variable;
@@ -678,6 +702,7 @@ sub End_Handler {
     $log->close();
     $unicyc_csv->close();
     $fourhitlin_csv->close();
+    $bicyc_csv->close();
     $out->close();
     exit(0);
 }
