@@ -46,21 +46,21 @@ $SIG{TERM} = \&End_Handler;
 
   This was originally a demultiplexer for TNSeq data, which has a very specific and
   illumina-incompatible (bcl2fastq) format.  It was slightly reformatted to match
-  Jason Hustedt and Jason Kahn's query which is as follows:
+  the following query:
 
   1. The primary goal is to observe how many of every size DNA template was incorporated into
      a sequencing library.  The implicit inference: when (DNA-size % ~10), the energetic
      requirements for a DNA to loop back on itself decrease, increasing the likelihood that
-     the molecule can circularize and therefore end up in the sequencing library.  Ergo, more
+     the molecule can cyclize and therefore end up in the sequencing library.  Ergo, more
      counts of a particular size is inversely related to the energy requirement.
   2. The input molecules were designed so that each size is distinguishable by its sequence.
-  3. One index is used to distinguish size-ranges (something like: 0-40, 41-70, 71-100, 100+)
+  3. Four indices are used to distinguish molecule size (ranging 119-219 bp)
   4. The important caveat: inter-molecular ligation is in a fight with intra-molecular ligation.
      a. Ergo, we need to be aware of multiple indices for two reasons; first to tell the size
         range, second because we need to be able to observe when size-a linearly ligates
         to size-b and when size-a bimolecularly cyclizes with size-b.
 
-  Thus Trey's original implementation is useful but not ideal and has been changed to do the
+  Thus the original implementation is useful but not ideal and has been changed to do the
   following:
 
   1. Rather than just dump the sequences into separate files, use the comment field
@@ -71,42 +71,48 @@ $SIG{TERM} = \&End_Handler;
   3. Output a text file describing the number of observations of each-sized molecule that is
      cyclized or not cyclized, when observed with the appropriate number of hits for a single
      cycliztion event.
+  4. Output individual CSV files for each cyclization state.
 
- The current implimentation (2018-11-13) needs to be updated to do the following:
-
- 1. Verify that a sequence with three hits has the appropriate matching index before and after
+ Updates for 2018-11-13
+ 1) Verify that a sequence with three hits has the appropriate matching index before and after
     the cyclization site (this will tell us that it was likely unimolecular).
-    a. add index sequences to allow for (1) --done?
-    b. add logic to check
- 2. Look at molecules with multiple hits (more than 3) and determine if they are bimolecular
-    reactions.
+    a. added index sequences to allow for (1) via "stepsynth" and "stepcyc" implementation
+    b. add logic to check by looking at index numbers for stepsynth and stepcyc & verifying match
+ 2) If a molecule is not unimolecular (as above) it is sorted into a bimolecular instead
+    a. done for 4 hit, needs to be done for 6 hit still
     a. Does it matter that size-a ligated to size-b, or just that a molecule of each size
        participated in a bimolecular reaction?
- 3. Separate out hits based not only on size (already done) and cyclization status (already
-    done) but which molecule they came from. Ideally something like:
-     47-30-10,165,2000
-     Where the components say that the three index sizes obtained (47, 30, and 10) built a molecule of size 165, and it was found 2000 times. Currently this is ignored and the count is solely based on size, such that 47-30-10, 77-00-10, and 77-10-00 (and all iterations 77-01-09...77-09-01) are all included into the count of 165. While it is important that this total size of DNA cyclized (or did not cyclize), I cannot currently remove bias from library input if I don't know which of the individual molecules contirbuted to the overall count.
-     Adding this logic will be complicated, but the initial searching of sequences and matching them to index files can already be done with index sequences that exactly match, at this point, we are looking only at the data output in the comment field. Should this be a separate program to run this type of logic?
 
- Updates for (2018-11-28)
+ Updates for 2018-11-28
  1) Implemented amatch instead of direct string match for indices.
- 2) the index number associated with stepsynth & stepcyc is now capable of being called upon to reference itself later for a logic check verifying they are the same index value.
+ 2) the index number associated with stepsynth & stepcyc is now capable of being called upon to reference
+    itself later for a logic check verifying they are the same index value.
     a. logic check separating unimolecular (matching) and bimolecular (not matching) stepsynth & stepcyc
- 3) need to add logic for sorting 6-index hits as bimolecular - counting on this is also needed.
-
+ 
  Updates for 2018-11-29
-  Fixed: output sizes are inaccurate
-  Still needed: check for 6-index and 2-index biomolecular & counting of these
-  Still needed: appropriate separation of counting based on construction, not just final size
-  To fix: aindex/amatch is giving matches that should not be matches if only substitution is allowed.
+ 1) fixed incorrect output sizes
+ 2) altered String::Approx to function as aindex() if params set and as index() if no params set
+    a) this somewhat functions for aindex() but does NOT function for index()
+        -aindex() no longer allows for unwanted insertions or deletions, but is not finding every match
+         that it should
+ 
+ Needed to be fixed:
+ 1) output sizes are inaccurate
+ 2) fix aindex to find all direct matches and those with a single substitution
+ 3) Separate out hits based not only on size (already done) and cyclization status (already
+ done) but which molecule they came from. Ideally something like:
+  47-30-10,165,2000
+ -Where the components say that the three index sizes obtained (47, 30, and 10) built a molecule
+ of size 165, and it was found 2000 times. Currently this is ignored and the count is solely
+ based on size, such that 47-30-10, 77-00-10, and 77-10-00 (and all iterations 77-01-09...77-09-01)
+ are all included into the count of 165. While it is important that this total size of DNA cyclized
+ (or did not cyclize), I cannot currently remove bias from library input if I don't know which of
+ the individual molecules contributed to the overall count.
+ 4) need to add logic for sorting 6-index hits as bimolecular - counting on this is also needed.
  
 =cut
 
 #options from Getopt::Long; defaults
-#we have added csv files for cyclized and not cyclized counts
-#the final option "distance" is for amatch distance, default to 0 (exact match) but added as an option to easily use the same program to allow more mis-matches.
-#Note to Trey: amatch distance of 0 is still doing fuzzy matching, not exact matching, which should happen for distance "S0"
-#I changed the option from "distance" to "substitution" as this is what it actually is. I have also added "insertion" and "deletion" options, although for me I will not be using them.
 my %options = (
     debug => 1,
     indices => 'index.txt',
@@ -165,13 +171,6 @@ my $found_four_bi = 0;
 my %bicyclized4_final_lengths = ();
 my $found_six_bi = 0;
 my %bicyclized6_final_lengths = ();
-
-=item Getopt::Long invocation
-
-  Invoke the command 'perldoc Getopt::Long' to learn about the many ways one may
-  Pass command line options to your program.
-
-=cut
 
 my $opt_result = GetOptions(
     "debug:i" => \$options{debug},
