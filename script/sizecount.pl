@@ -298,8 +298,9 @@ sub Sort_File_Approx {
             my $params = [ "I$options{insertion}","D$options{deletion}","S$options{substitution}" ];
             ##set up array for starts
             my @starts = ();
-            ##looks at parameters & if array is empty, continue with direct match, if array is not empty, do aindex
-            if ($options{insertion} == 0 && $options{deletion} == 0 && $options{substitution} == 0) {
+            ##looks at parameters & if not defined, continue with direct match, if params exist, do aindex
+            if ( ! defined $options{insertion} && ! defined $options{deletion} &&
+                    ! defined $options{substitution} ) {
                 $sequence =~ m/$index/;
                 @starts = @-;
             } else {
@@ -307,7 +308,7 @@ sub Sort_File_Approx {
             }
             ## if (@starts) {
             if ($starts[0] ne '-1') {
-                ## old matching, exact matching only (next two lines would replace above two lines)
+                ## old matching, exact matching only (next two lines would replace above if/else)
                 ## if ($sequence =~ m/$index/) {
                 ## my @starts = @-;
                 $found++;
