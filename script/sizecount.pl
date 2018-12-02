@@ -165,6 +165,8 @@ my %sevens = (
 ## currently this works by looking at the total summed length and not the individual makeup of the molecule.
 my $found_all_four = 0;
 my $found_four_uni = 0;
+my $found_four_lin = 0;
+my $found_four_unknown = 0;
 my %unicyclized4_final_lengths = ();
 my %linear4_final_lengths = ();
 my $found_four_bi = 0;
@@ -283,13 +285,16 @@ sub Sort_File_Approx {
         ## all sequences.
         my %observe = (
             helical_fwd => 0, stepcyc_fwd => 0, variable_fwd => 0, stepsynth_fwd => 0,
-            helical_rev => 0, stepcyc_rev => 0, variable_rev => 0, stepsynth_rev => 0, unknown => 0);
+            helical_rev => 0, stepcyc_rev => 0, variable_rev => 0, stepsynth_rev => 0,
+            unknown => 0);
         my %positions = (
             helical_fwd => 0, stepcyc_fwd => 0, variable_fwd => 0, stepsynth_fwd => 0,
-            helical_rev => 0, stepcyc_rev => 0, variable_rev => 0, stepsynth_rev => 0, unknown => 0);
+            helical_rev => 0, stepcyc_rev => 0, variable_rev => 0, stepsynth_rev => 0,
+            unknown => 0);
         my %numbers = (
             helical_fwd => 0, stepcyc_fwd => 0, variable_fwd => 0, stepsynth_fwd => 0,
-            helical_rev => 0, stepcyc_rev => 0, variable_rev => 0, stepsynth_rev => 0, unknown => 0);
+            helical_rev => 0, stepcyc_rev => 0, variable_rev => 0, stepsynth_rev => 0,
+            unknown => 0);
         my $observed_indices = 0;
         foreach my $index (@index_list) {
             my $info = $data->{$index};
@@ -304,18 +309,12 @@ sub Sort_File_Approx {
                 $sequence =~ m/$index/;
                 @starts = @-;
             } else {
-            @starts = aindex($index, $params, ($sequence));
+                @starts = aindex($index, $params, ($sequence));
             }
-            ## if (@starts) {
             if ($starts[0] ne '-1') {
-                ## old matching, exact matching only (next two lines would replace above if/else)
-                ## if ($sequence =~ m/$index/) {
-                ## my @starts = @-;
                 $found++;
                 $found_id = $index;
                 for my $st (@starts) {
-                    ## old comment format
-                    ## $comment .= "$st:$seqlen:$info->{name}:$info->{number}:$info->{direction} ";
                     $comment .= "$st:$info->{name}:$info->{number}:$info->{direction} ";
                     ## where "st" is position within read, info name and number identify the index, and direction identifies fwd or rev
                     if ($info->{name} eq 'helical' && $info->{direction} eq 'fwd') {
@@ -410,6 +409,7 @@ my $bimol_valid = 0;
                     $positions{variable_fwd} < $positions{stepsynth_fwd} &&
                     $numbers{stepsynth_fwd} == $numbers{stepcyc_fwd}) {
                 $cyclized = "unimolecular";
+                $found_four_uni++;
                 if (!defined($unicyclized4_final_lengths{$final_size})) {
                     $unicyclized4_final_lengths{$final_size} = 1;
                 } else {
@@ -421,6 +421,7 @@ my $bimol_valid = 0;
                     $positions{variable_fwd} < $positions{stepsynth_fwd} &&
                     $numbers{stepsynth_fwd} != $numbers{stepcyc_fwd}) {
                         $cyclized = "bimolecular-4";
+                        $found_four_bi++;
                         if (!defined($bicyclized4_final_lengths{$final_size})) {
                             $bicyclized4_final_lengths{$final_size} = 1;
                         } else {
@@ -431,6 +432,7 @@ my $bimol_valid = 0;
                     $positions{variable_fwd} < $positions{stepsynth_fwd} &&
                     $positions{stepsynth_fwd} < $positions{stepcyc_fwd}) {
                 $cyclized = "linear";
+                $found_four_lin++;
                 if (!defined($linear4_final_lengths{$final_size})) {
                     $linear4_final_lengths{$final_size} = 1;
                 } else {
@@ -438,6 +440,7 @@ my $bimol_valid = 0;
                 }
             } else {
                 $cyclized = "unknown";
+                $found_four_unknown++;
             }
                         ## here we append the status of "cyclized" to the comment line, options for 4 hits are: unimolecular, bimolecular-4, linear, and unknown
             $comment .= "cyclized type: ${cyclized} ";
@@ -469,6 +472,7 @@ my $bimol_valid = 0;
                         $positions{variable_rev} < $positions{stepsynth_rev} &&
                         $numbers{stepsynth_rev} == $numbers{stepcyc_rev}) {
                             $cyclized = "unimolecular";
+                            $found_four_uni++;
                             if (!defined($unicyclized4_final_lengths{$final_size})) {
                                 $unicyclized4_final_lengths{$final_size} = 1;
                             } else {
@@ -480,6 +484,7 @@ my $bimol_valid = 0;
                             $positions{variable_rev} < $positions{stepsynth_rev} &&
                             $numbers{stepsynth_rev} != $numbers{stepcyc_rev}) {
                                 $cyclized = "bimolecular-4";
+                                $found_four_bi++;
                                 if (!defined($bicyclized4_final_lengths{$final_size})) {
                                     $bicyclized4_final_lengths{$final_size} = 1;
                                 } else {
@@ -490,6 +495,7 @@ my $bimol_valid = 0;
                                 $positions{variable_rev} < $positions{stepsynth_rev} &&
                                 $positions{stepsynth_rev} < $positions{stepcyc_rev}) {
                                     $cyclized = "linear";
+                                    $found_four_lin++;
                                     if (!defined($linear4_final_lengths{$final_size})) {
                                         $linear4_final_lengths{$final_size} = 1;
                                     } else {
@@ -497,6 +503,7 @@ my $bimol_valid = 0;
                                     }
                                 } else {
                                     $cyclized = "unknown";
+                                    $found_four_unknown++;
                                 }
                                 ## here we append the status of "cyclized" to the comment line, options for 4 hits are: unimolecular, bimolecular-4, linear, and unknown
                                 $comment .= "cyclized type: ${cyclized} ";
@@ -685,20 +692,21 @@ sub End_Handler {
             print $unicyc_csv "$k,$unicyclized4_final_lengths{$k}\n";
         }
     }
-    print $log "${found_four_uni} reads had a stepcyc+stepsynth+variable+helical and not cyclized:\n";
+    print $log "${found_four_lin} reads had a stepcyc+stepsynth+variable+helical and not cyclized:\n";
     foreach my $k (sort keys %linear4_final_lengths) {
         print $log "Size $k was found $linear4_final_lengths{$k} times and not cyclized.\n";
         if ($k ne "$options{spacer}") {
             print $fourhitlin_csv "$k,$linear4_final_lengths{$k}\n";
         }
     }
-    print $log "${found_four_bi} reads had a stepsynth+variable+helical+stepcyc:\n";
+    print $log "${found_four_bi} reads had a biomolecular stepsynth+variable+helical+stepcyc:\n";
     foreach my $k (sort keys %bicyclized4_final_lengths) {
-        print $log "Size $k was found $bicyclized4_final_lengths{$k} times and cyclized.\n";
+        print $log "Size $k was found $bicyclized4_final_lengths{$k} times and cyclized (bimolecular).\n";
         if ($k ne "$options{spacer}") {
             print $bicyc_csv "$k,$bicyclized4_final_lengths{$k}\n";
         }
     }
+    print $log "${found_four_unknown} reads had four hits and were unknown:\n";
     $log->close();
     $unicyc_csv->close();
     $fourhitlin_csv->close();
