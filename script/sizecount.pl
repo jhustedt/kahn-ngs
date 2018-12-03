@@ -96,10 +96,15 @@ $SIG{TERM} = \&End_Handler;
         -aindex() no longer allows for unwanted insertions or deletions, but is not finding every match
          that it should
  
+ updates for 2018-12-02
+ 1) aindex still is not finding what I would expect, but index is better
+ 2) I have added counters for six hit bimolecular cyclization & two hit bimolecular cyclization.
+    a) I don't do anything with these other than count their existence.
+ 3) I have added counters for excess hits and how many times they end up found.
+ 
  Needed to be fixed:
- 1) output sizes are inaccurate
- 2) fix aindex to find all direct matches and those with a single substitution
- 3) Separate out hits based not only on size (already done) and cyclization status (already
+ 1) fix aindex to find all direct matches and those with a single substitution
+ 2) Separate out hits based not only on size (already done) and cyclization status (already
  done) but which molecule they came from. Ideally something like:
   47-30-10,165,2000
  -Where the components say that the three index sizes obtained (47, 30, and 10) built a molecule
@@ -108,7 +113,7 @@ $SIG{TERM} = \&End_Handler;
  are all included into the count of 165. While it is important that this total size of DNA cyclized
  (or did not cyclize), I cannot currently remove bias from library input if I don't know which of
  the individual molecules contributed to the overall count.
- 4) need to add logic for sorting 6-index hits as bimolecular - counting on this is also needed.
+ 3) need to add logic for sorting 6-index hits as bimolecular - counting on this is also needed.
  
 =cut
 
@@ -133,32 +138,39 @@ my $observed_reads = 0;
 my %observations = (
     helical_fwd => 0, stepcyc_fwd => 0, variable_fwd => 0, stepsynth_fwd => 0,
     helical_rev => 0, stepcyc_rev => 0, variable_rev => 0, stepsynth_rev => 0,);
-## This counts how often each index is observed when one index is observed.
+## This counts how often each index is observed when 1-10 indices are observed.
 my %singles = (
     sum => 0, helical_fwd => 0, stepcyc_fwd => 0, variable_fwd => 0, stepsynth_fwd => 0,
     helical_rev => 0, stepcyc_rev => 0, variable_rev => 0, stepsynth_rev => 0,);
-## This counts how often each index is observed when two were found.
 my %doubles = (
     sum => 0, helical_fwd => 0, stepcyc_fwd => 0, variable_fwd => 0, stepsynth_fwd => 0,
     helical_rev => 0, stepcyc_rev => 0, variable_rev => 0, stepsynth_rev => 0,);
-## This counts how often each index is observed when three were found.
 my %triples = (
     sum => 0, helical_fwd => 0, stepcyc_fwd => 0, variable_fwd => 0, stepsynth_fwd => 0,
     helical_rev => 0, stepcyc_rev => 0, variable_rev => 0, stepsynth_rev => 0,);
-## This counts how often each index is observed when four were found.
 my %quads = (
     sum => 0, helical_fwd => 0, stepcyc_fwd => 0, variable_fwd => 0, stepsynth_fwd => 0,
     helical_rev => 0, stepcyc_rev => 0, variable_rev => 0, stepsynth_rev => 0,);
-## This counts how often each index is observed when five were found.
 my %fives = (
     sum => 0, helical_fwd => 0, stepcyc_fwd => 0, variable_fwd => 0, stepsynth_fwd => 0,
     helical_rev => 0, stepcyc_rev => 0, variable_rev => 0, stepsynth_rev => 0,);
-## This counts how often each index is observed when six were found.
 my %sixes = (
     sum => 0, helical_fwd => 0, stepcyc_fwd => 0, variable_fwd => 0, stepsynth_fwd => 0,
     helical_rev => 0, stepcyc_rev => 0, variable_rev => 0, stepsynth_rev => 0,);
-## Added to count for sevens (although in theory they should not exist)
+## in theory hits below here should not exist
 my %sevens = (
+    sum => 0, helical_fwd => 0, stepcyc_fwd => 0, variable_fwd => 0, stepsynth_fwd => 0,
+    helical_rev => 0, stepcyc_rev => 0, variable_rev => 0, stepsynth_rev => 0,);
+my %eights = (
+    sum => 0, helical_fwd => 0, stepcyc_fwd => 0, variable_fwd => 0, stepsynth_fwd => 0,
+    helical_rev => 0, stepcyc_rev => 0, variable_rev => 0, stepsynth_rev => 0,);
+my %nines = (
+    sum => 0, helical_fwd => 0, stepcyc_fwd => 0, variable_fwd => 0, stepsynth_fwd => 0,
+    helical_rev => 0, stepcyc_rev => 0, variable_rev => 0, stepsynth_rev => 0,);
+my %tens = (
+    sum => 0, helical_fwd => 0, stepcyc_fwd => 0, variable_fwd => 0, stepsynth_fwd => 0,
+    helical_rev => 0, stepcyc_rev => 0, variable_rev => 0, stepsynth_rev => 0,);
+my %elevenup = (
     sum => 0, helical_fwd => 0, stepcyc_fwd => 0, variable_fwd => 0, stepsynth_fwd => 0,
     helical_rev => 0, stepcyc_rev => 0, variable_rev => 0, stepsynth_rev => 0,);
 ## Here I set up tags for counting all when all four are found unimolecular, when all four are found bimolecular, when all six are found biomolecular, and appropriate final lengths outputs for each
@@ -173,6 +185,8 @@ my $found_four_bi = 0;
 my %bicyclized4_final_lengths = ();
 my $found_six_bi = 0;
 my %bicyclized6_final_lengths = ();
+my $found_two_bi = 0;
+my %bicyclized2_final_lengths = ();
 
 my $opt_result = GetOptions(
     "debug:i" => \$options{debug},
@@ -446,6 +460,7 @@ my $bimol_valid = 0;
             $comment .= "cyclized type: ${cyclized} ";
             }
       ## now we look at the same thing as above, but for reverse molecules
+      ## Note to Trey - should this be an elsif?
             if ($observed_indices == 4 && $observe{stepsynth_rev} > 0 && $observe{helical_rev} > 0 &&
                         $observe{stepcyc_rev} > 0 && $observe{variable_rev} > 0) {
                             $rev_valid = 1;
@@ -508,13 +523,28 @@ my $bimol_valid = 0;
                                 ## here we append the status of "cyclized" to the comment line, options for 4 hits are: unimolecular, bimolecular-4, linear, and unknown
                                 $comment .= "cyclized type: ${cyclized} ";
                             }
+      ## I believe this is the best place to add the found 6 bi & found 2 bi check - likely as elsif
+      ## Note to Trey - I have written what will at least be the start of a found_six_bi here, I don't yet know how I wish to count these, so right now I'm just identifying that they exist, iterating up their count for the summary file, and moving on.
+      elsif ($observed_indices == 6 && $observe{stepsynth_fwd} > 0 && $observe{helical_fwd} > 0 &&
+            $observe{variable_fwd} > 0 && $observe{stepsynth_rev} > 0 && $observe{helical_rev} > 0 &&
+            $observe{variable_rev} > 0) {
+          $found_six_bi++;
+          $cyclized = "bimolecular";
+          $comment .= "cyclized type: ${cyclized} ";
+      }
+      ## Note to Trey - found_two_bi here
+      elsif ($observed_indices == 2 && $observe{stepcyc_fwd} > 0 && $observe{stepcyc_rev} > 0) {
+          $found_two_bi++;
+          $cyclized = "bimolecular";
+          $comment .= "cyclized type: ${cyclized} ";
+      }
         else {
             $comment .= "$count ";
         }
 
         ## append to the comment the number of observed indices.
         $comment .= " hits: ${observed_indices} ";
-        ## Increment the singles->sevens with the relevant observations.
+        ## Increment the singles->tens (& 11+) with the relevant observations.
         if ($observed_indices == 1) {
             $singles{sum}++;
             foreach my $k (keys %observe) { $singles{$k} += $observe{$k}; }
@@ -536,8 +566,20 @@ my $bimol_valid = 0;
         } elsif ($observed_indices == 7) {
             $sevens{sum}++;
             foreach my $k (keys %observe) { $sevens{$k} += $observe{$k}; }
+        } elsif ($observed_indices == 8) {
+            $eights{sum}++;
+            foreach my $k (keys %observe) { $eights{$k} += $observe{$k}; }
+        } elsif ($observed_indices == 9) {
+            $nines{sum}++;
+            foreach my $k (keys %observe) { $nines{$k} += $observe{$k}; }
+        } elsif ($observed_indices == 10) {
+            $tens{sum}++;
+            foreach my $k (keys %observe) { $tens{$k} += $observe{$k}; }
+        } elsif (%observed_indices >= 11) {
+            $elevenup{sum}++;
+            foreach my $k (keys %observe) { $elevenup{$k} += $observe{$k}; }
         }
-        ## print STDOUT "$comment\n";
+            ## print STDOUT "$comment\n";
         my $fastq_string = qq"\@${id}
 ${sequence}
 +${comment}
@@ -683,6 +725,38 @@ sub End_Handler {
             }
         }
     }
+    if ($eights{sum} > 0) {
+        print $log "$eights{sum} 8-index reads were observed, including:\n";
+        foreach my $k (sort keys %eights) {
+            if ($eights{$k} > 0 and $k ne 'sum') {
+                print $log "The read type: ${k} was observed: $eights{$k} times.\n";
+            }
+        }
+    }
+    if ($nines{sum} > 0) {
+        print $log "$nines{sum} 9-index reads were observed, including:\n";
+        foreach my $k (sort keys %nines) {
+            if ($nines{$k} > 0 and $k ne 'sum') {
+                print $log "The read type: ${k} was observed: $nines{$k} times.\n";
+            }
+        }
+    }
+    if ($tens{sum} > 0) {
+        print $log "$tens{sum} 10-index reads were observed, including:\n";
+        foreach my $k (sort keys %tens) {
+            if ($tens{$k} > 0 and $k ne 'sum') {
+                print $log "The read type: ${k} was observed: $tens{$k} times.\n";
+            }
+        }
+    }
+    if ($elevenup{sum} > 0) {
+        print $log "$elevenup{sum} 11 or more-index reads were observed, including:\n";
+        foreach my $k (sort keys %elevenup) {
+            if ($elevenup{$k} > 0 and $k ne 'sum') {
+                print $log "The read type: ${k} was observed: $elevenup{$k} times.\n";
+            }
+        }
+    }
     print $log "\n";
     print $log "${found_all_four} reads had a stepsynth+variable+helical+stepcyc:\n";
     print $log "${found_four_uni} reads had a stepsynth+variable+helical+stepcyc and cyclized:\n";
@@ -706,7 +780,9 @@ sub End_Handler {
             print $bicyc_csv "$k,$bicyclized4_final_lengths{$k}\n";
         }
     }
-    print $log "${found_four_unknown} reads had four hits and were unknown:\n";
+    print $log "${found_four_unknown} reads had four hits and were unknown\n";
+    print $log "${found_six_bi} reads had six hits and were bimolecular\n";
+    print $log "${found_two_bi} reads had two hits and were bimolecular\n";
     $log->close();
     $unicyc_csv->close();
     $fourhitlin_csv->close();
