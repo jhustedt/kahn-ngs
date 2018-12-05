@@ -412,10 +412,10 @@ my $helicalfwd = 0;
 my $helicalrev = 0;
 my $variablefwd = 0;
 my $variablerev = 0;
-my stepcycfwd = 0;
-my stepcycrev = 0;
-my stepsynthfwd = 0;
-my stepsynthrev = 0;
+my $stepcycfwd = 0;
+my $stepcycrev = 0;
+my $stepsynthfwd = 0;
+my $stepsynthrev = 0;
       ## Here we look only at files that have cyclized, count them, and place the count into its own csv
       ## Note to Trey - does the following line actually do anything? I later set the status of cyclized, so i need to set it up here, but why is the quoted part "yes" here when numerous different options come later? these options used to be yes/no/unknown, but now are unimolecular, bimolecular-4, linear, and unknown
         my $cyclized = "yes";
