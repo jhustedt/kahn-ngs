@@ -197,7 +197,7 @@ my $found_two_unknown = 0;
 ## for bicyclized 2 (in an A-A/B-B bimolecular cyclization) the final states only have 6 options.
 ## I am calling this a "final state" even though it will be output as a size,count as with others
 ## the size options will essentially be stepcyc size combinations (i.e. 47+47, 47+77, 47+107, etc)
-my %bicyclized2_final_state = ();
+my %bicyclized2_final_lengths = ();
 
 my $opt_result = GetOptions(
     "debug:i" => \$options{debug},
