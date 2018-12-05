@@ -612,7 +612,7 @@ my $stepsynthrev = 0;
           if ($positions{stepcyc_fwd} < $positions{stepcyc_rev}) {
               $found_two_bi++;
               $cyclized = "bimolecular-2";
-              $comment .= "$count final size: $final_bi_size ";
+              $comment .= "$count final size: $final_bi2_size ";
               if (!defined($bicyclized2_final_lengths{$final_bi2_size})) {
                   $bicyclized2_final_lengths{$final_bi2_size} = 1;
               } else {
@@ -660,7 +660,7 @@ my $stepsynthrev = 0;
         } elsif ($observed_indices == 10) {
             $tens{sum}++;
             foreach my $k (keys %observe) { $tens{$k} += $observe{$k}; }
-        } elsif (%observed_indices >= 11) {
+        } elsif ($observed_indices >= 11) {
             $elevenup{sum}++;
             foreach my $k (keys %observe) { $elevenup{$k} += $observe{$k}; }
         }
