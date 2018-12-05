@@ -102,6 +102,11 @@ $SIG{TERM} = \&End_Handler;
     a) I don't do anything with these other than count their existence.
  3) I have added counters for excess hits and how many times they end up found.
  
+ Updates for 2018-12-04
+ 1) added logic for six hit bimolecular and two hit bimolecular
+    a) added logs for six hit and two hit bimolecular
+ 2) separated logs for bimolecular products - 2 hit, 4 hit, and 6 hit are reported in separate csv files
+ 
  Needed to be fixed:
  1) fix aindex to find all direct matches and those with a single substitution
  2) Separate out hits based not only on size (already done) and cyclization status (already
@@ -113,7 +118,6 @@ $SIG{TERM} = \&End_Handler;
  are all included into the count of 165. While it is important that this total size of DNA cyclized
  (or did not cyclize), I cannot currently remove bias from library input if I don't know which of
  the individual molecules contributed to the overall count.
- 3) need to add logic for sorting 6-index hits as bimolecular - counting on this is also needed.
  
 =cut
 
@@ -127,7 +131,9 @@ my %options = (
     summary => 'summary.txt',
     unicyc_csv => 'unimolecular_cyclized_lengths.csv',
     fourhitlin_csv => 'unimolecular_linear_lengths.csv',
-    bicyc_csv => 'bimolecular_cyclized_lengths.csv',
+    bicyc4_csv => 'bimolecular4_cyclized_lengths.csv',
+    bicyc6_csv => 'bimolecular6_cyclized_lengths.csv',
+    bicyc2_csv => 'bimolecular2_cyclized_lengths.csv',
     spacer => 72,
     substitution => 0,
     insertion => 0,
@@ -184,9 +190,14 @@ my %linear4_final_lengths = ();
 my $found_four_bi = 0;
 my %bicyclized4_final_lengths = ();
 my $found_six_bi = 0;
+my $found_six_unknown = 0;
 my %bicyclized6_final_lengths = ();
 my $found_two_bi = 0;
-my %bicyclized2_final_lengths = ();
+my $found_two_unknown = 0;
+## for bicyclized 2 (in an A-A/B-B bimolecular cyclization) the final states only have 6 options.
+## I am calling this a "final state" even though it will be output as a size,count as with others
+## the size options will essentially be stepcyc size combinations (i.e. 47+47, 47+77, 47+107, etc)
+my %bicyclized2_final_state = ();
 
 my $opt_result = GetOptions(
     "debug:i" => \$options{debug},
@@ -197,7 +208,9 @@ my $opt_result = GetOptions(
     "summary:s" => \$options{summary},
     "unicyc_csv:s" => \$options{unicyc_csv},
     "fourhitlin_csv:s" => \$options{fourhitlin_csv},
-    "bicyc_csv:s" => \$options{bicyc_csv},
+    "bicyc4_csv:s" => \$options{bicyc4_csv},
+    "bicyc6_csv:s" => \$options{bicyc6_csv},
+    "bicyc2_csv:s" => \$options{bicyc2_csv},
     "outfastq:s" => \$options{outfastq},
     "substitution:i" => \$options{substitution},
     "insertion:i" => \$options{insertion},
@@ -206,7 +219,9 @@ my $opt_result = GetOptions(
 my $log = new FileHandle(">$options{outdir}/$options{summary}");
 my $unicyc_csv = new FileHandle(">$options{outdir}/$options{unicyc_csv}");
 my $fourhitlin_csv = new FileHandle(">$options{outdir}/$options{fourhitlin_csv}");
-my $bicyc_csv = new FileHandle(">$options{outdir}/$options{bicyc_csv}");
+my $bicyc4_csv = new FileHandle(">$options{outdir}/$options{bicyc4_csv}");
+my $bicyc6_csv = new FileHandle(">$options{outdir}/$options{bicyc6_csv}");
+my $bicyc2_csv = new FileHandle(">$options{outdir}/$options{bicyc2_csv}");
 
 ## This checks to see that the options for index, input, and output directory exist and provides an error if they do not.
 if (!-r $options{input}) {
@@ -414,6 +429,7 @@ my $bimol_valid = 0;
                     $stepsynth = $name;
                 }
             }
+            ## I need a means of doing this that separates out into fwd/rev for bimolecular A-A
             my $final_size = $options{spacer} + $helical + $stepsynth + $variable;
             $comment .= "$count final size: $final_size ";
             ## Add a check for cyclized vs. not vs. unknown.
@@ -478,6 +494,7 @@ my $bimol_valid = 0;
                                     $variable = $name
                                 }
                             }
+    ## Note to trey - I have this defined for the forwards above, is this definition necesary?
                             my $final_size = $options{spacer} + $helical + $stepsynth + $variable;
                             $comment .= "$count final size: $final_size ";
                             ## Add a check for cyclized vs. not vs. unknown.
@@ -525,17 +542,77 @@ my $bimol_valid = 0;
                             }
       ## I believe this is the best place to add the found 6 bi & found 2 bi check - likely as elsif
       ## Note to Trey - I have written what will at least be the start of a found_six_bi here, I don't yet know how I wish to count these, so right now I'm just identifying that they exist, iterating up their count for the summary file, and moving on.
-      elsif ($observed_indices == 6 && $observe{stepsynth_fwd} > 0 && $observe{helical_fwd} > 0 &&
+      if ($observed_indices == 6 && $observe{stepsynth_fwd} > 0 && $observe{helical_fwd} > 0 &&
             $observe{variable_fwd} > 0 && $observe{stepsynth_rev} > 0 && $observe{helical_rev} > 0 &&
             $observe{variable_rev} > 0) {
-          $found_six_bi++;
-          $cyclized = "bimolecular";
+                my @pieces = split(/\s+/, $comment);
+                for my $p (@pieces) {
+                    my ($position, $piece, $name, $dir) = split(/:/, $p);
+                    if ($piece eq 'helical' && $dir eq 'fwd') {
+                        $helicalfwd = $name;
+                    } elsif ($piece eq 'helical' && $dir eq 'rev') {
+                        $helicalrev = $name
+                    } elsif ($piece eq 'variable' && $dir eq 'fwd') {
+                        $variablefwd = $name
+                    } elsif ($piece eq 'variable' && $dir eq 'rev') {
+                        $variablerev = $name
+                    } elsif ($piece eq 'stepsynth' && $dir eq 'fwd') {
+                        $stepsynthfwd = $name
+                    } elsif ($piece eq 'stepsynth' && $dir eq 'rev') {
+                        $stepsynthrev = $name
+                    }
+                }
+                my $final_bi6_fwd_size = $options{spacer} + $stepsynthfwd + $variablefwd + $helicalfwd;
+                my $final_bi6_rev_size = $options{spacer} + $stepsynthrev + $variablerev + $helicalrev;
+                if ($positions{stepsynth_fwd} < $positions{variable_fwd} &&
+                    $positions{variable_fwd} < $positions{helical_fwd} &&
+                    $positions{helical_fwd} < $positions{helical_rev} &&
+                    $positions{helical_rev} < $positions{variable_rev} &&
+                    $positions{variable_rev} < $positions{stepsynth_rev} ) {
+                        $found_six_bi++;
+                        $cyclized = "bimolecular-6";
+                        $comment .= "$count final sizes: fwd: $final_bi6_fwd_size rev: $final_bi6_rev_size ";
+                        if (!defined($bicyclized6_final_lengths{$final_bi6_fwd_size})) {
+                            $bicyclized6_final_lengths{$final_bi6_fwd_size} = 1;
+                        } else {
+                            $bicyclized6_final_lengths{$final_bi6_fwd_size}++;
+                        }
+                        if (!defined(bicyclized6_final_lengths{$final_bi6_rev_size})) {
+                            $bicyclized6_final_lengths{$final_bi6_rev_size} = 1;
+                        } else {
+                            $bicyclized6_final_lengths{$final_bi6_rev_size}++;
+                        }
+                } else {
+                    $cyclized = "unknown";
+                    $found_six_unknown++;
+                }
           $comment .= "cyclized type: ${cyclized} ";
       }
       ## Note to Trey - found_two_bi here
-      elsif ($observed_indices == 2 && $observe{stepcyc_fwd} > 0 && $observe{stepcyc_rev} > 0) {
-          $found_two_bi++;
-          $cyclized = "bimolecular";
+      if ($observed_indices == 2 && $observe{stepcyc_fwd} > 0 && $observe{stepcyc_rev} > 0) {
+          my @pieces = split(/\s+/, $comment);
+          for my $p (@pieces) {
+              my ($position, $piece, $name, $dir) = split(/:/, $p);
+              if ($piece eq 'stepcyc' && $dir eq 'fwd') {
+                  $stepcycfwd = $name;
+              } elsif ($piece eq 'stepcyc' && $dir eq 'rev') {
+                  $stepcycrev = $name;
+              }
+          }
+          ## note to trey - not sure the name change here is necessary
+          my $final_bi2_size = $stepcycfwd + $stepcycrev;
+          if ($positions{stepcyc_fwd} < $positions{stepcyc_rev}) {
+              $found_two_bi++;
+              $cyclized = "bimolecular-2";
+              $comment .= "$count final size: $final_bi_size ";
+              if (!defined($bicyclized2_final_lengths{$final_bi2_size})) {
+                  $bicyclized2_final_lengths{$final_bi2_size} = 1;
+              } else {
+                  $bicyclized2_final_lengths{$final_bi2_size}++;
+              }
+          } else {
+              $cyclized = "unknown";
+          }
           $comment .= "cyclized type: ${cyclized} ";
       }
         else {
@@ -777,16 +854,28 @@ sub End_Handler {
     foreach my $k (sort keys %bicyclized4_final_lengths) {
         print $log "Size $k was found $bicyclized4_final_lengths{$k} times and cyclized (bimolecular).\n";
         if ($k ne "$options{spacer}") {
-            print $bicyc_csv "$k,$bicyclized4_final_lengths{$k}\n";
+            print $bicyc4_csv "$k,$bicyclized4_final_lengths{$k}\n";
         }
     }
     print $log "${found_four_unknown} reads had four hits and were unknown\n";
     print $log "${found_six_bi} reads had six hits and were bimolecular\n";
-    print $log "${found_two_bi} reads had two hits and were bimolecular\n";
+    foreach my $k (sort keys %bicyclized6_final_lengths) {
+        print $log "Size $k was found $bicyclized6_final_lengths{$k} times and cyclized.\n";
+        if ($k ne "$options{spacer}") {
+            print $bicyc6_csv "$k,$bicyclized6_final_lengths{$k}\n";
+        }
+    }
+    print $log "${found_two_bi} reads had two hits and were bimolecular:\n";
+    foreach my $k (sort keys %bicyclized2_final_lengths) {
+        print $log "Size $k was found $bicyclized2_final_lengths{$k} times and cyclized (bimolecular).\n";
+        print $bicyc2_csv "$k,$bicyclized2_final_lengths{$k}\n";
+    }
     $log->close();
     $unicyc_csv->close();
     $fourhitlin_csv->close();
-    $bicyc_csv->close();
+    $bicyc4_csv->close();
+    $bicyc6_csv->close();
+    $bicyc2_csv->close();
     $out->close();
     exit(0);
 }
