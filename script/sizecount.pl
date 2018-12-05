@@ -499,41 +499,39 @@ my $stepsynthrev = 0;
                                 } elsif ($piece eq 'variable' && $dir eq 'rev') {
                                     $variable = $name
                                 } elsif ($piece eq 'stepsynth' && $dir eq 'rev') {
-                                    $variable = $name
+                                    $stepsynth = $name
                                 }
                             }
-    ## Note to trey - I have this defined for the forwards above, is this definition necesary?
                             my $final_size = $options{spacer} + $helical + $stepsynth + $variable;
                             $comment .= "$count final size: $final_size ";
                             ## Add a check for cyclized vs. not vs. unknown.
-                            ## I want to add a check for $info->{number} from stepsynth = $info->{number} from stepcyc. If this order & stepsynth number = stepcyc number $unicyclized = "yes"; else if this order & stepsynth number != stepcyc number $bimolcyclized = "yes"; then count out separately into csv files for unimolecular and bimolecular.
-                            if ($positions{stepcyc_rev} < $positions{helical_rev} &&
-                        $positions{helical_rev} < $positions{variable_rev} &&
-                        $positions{variable_rev} < $positions{stepsynth_rev} &&
-                        $numbers{stepsynth_rev} == $numbers{stepcyc_rev}) {
-                            $cyclized = "unimolecular";
-                            $found_four_uni++;
+                            if ($positions{stepcyc_rev} > $positions{helical_rev} &&
+                                $positions{helical_rev} > $positions{variable_rev} &&
+                                $positions{variable_rev} > $positions{stepsynth_rev} &&
+                                $numbers{stepsynth_rev} == $numbers{stepcyc_rev}) {
+                                    $cyclized = "unimolecular";
+                                    $found_four_uni++;
                             if (!defined($unicyclized4_final_lengths{$final_size})) {
                                 $unicyclized4_final_lengths{$final_size} = 1;
                             } else {
                                 $unicyclized4_final_lengths{$final_size}++;
                             }
                             ## if stepsynth & stepcyc do not match, but the order is still the same, this is a bimolecular A to B cyclization
-                        }  elsif ($positions{stepcyc_rev} < $positions{helical_rev} &&
-                            $positions{helical_rev} < $positions{variable_rev} &&
-                            $positions{variable_rev} < $positions{stepsynth_rev} &&
-                            $numbers{stepsynth_rev} != $numbers{stepcyc_rev}) {
-                                $cyclized = "bimolecular-4";
-                                $found_four_bi++;
+                        } elsif ($positions{stepcyc_rev} > $positions{helical_rev} &&
+                                $positions{helical_rev} > $positions{variable_rev} &&
+                                $positions{variable_rev} > $positions{stepsynth_rev} &&
+                                $numbers{stepsynth_rev} != $numbers{stepcyc_rev}) {
+                                    $cyclized = "bimolecular-4";
+                                    $found_four_bi++;
                                 if (!defined($bicyclized4_final_lengths{$final_size})) {
                                     $bicyclized4_final_lengths{$final_size} = 1;
                                 } else {
                                     $bicyclized4_final_lengths{$final_size}++;
                                 }
                                 ## if order is that of initial library we count up linear molecules
-                            }  elsif ($positions{helical_rev} < $positions{variable_rev} &&
-                                $positions{variable_rev} < $positions{stepsynth_rev} &&
-                                $positions{stepsynth_rev} < $positions{stepcyc_rev}) {
+                            }  elsif ($positions{helical_rev} > $positions{variable_rev} &&
+                                $positions{variable_rev} > $positions{stepsynth_rev} &&
+                                $positions{stepsynth_rev} > $positions{stepcyc_rev}) {
                                     $cyclized = "linear";
                                     $found_four_lin++;
                                     if (!defined($linear4_final_lengths{$final_size})) {
