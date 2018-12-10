@@ -40,7 +40,7 @@ $SIG{TERM} = \&End_Handler;
  --insertion: Levenshtein insertion distance
  --deletion: Levenshtein deletion distance
  --spacer : specify spacer length (default 72)
- --debug  : Print a bunch of debugging output?
+ --debug  : Print a bunch of debugging output
 
 =head1 DESCRIPTION
 
@@ -124,7 +124,7 @@ $SIG{TERM} = \&End_Handler;
 
 #options from Getopt::Long; defaults
 my %options = (
-    debug => 1,
+    debug => 0,
     indices => 'index.txt',
     input => 'test.fastq.gz',
     outdir => 'output',
@@ -345,7 +345,9 @@ sub Sort_File_Approx {
                 $found++;
                 $found_id = $index;
                 for my $st (@starts) {
-                    print "TESTME: @starts\n";
+                    if ($options{debug} == 1) {
+                        print "TESTME: @starts\n";
+                    }
                     $comment .= "$st:$info->{name}:$info->{number}:$info->{direction} ";
                     ## where "st" is position within read, info name and number identify the index, and direction identifies fwd or rev
                     if ($info->{name} eq 'helical' && $info->{direction} eq 'fwd') {
@@ -400,8 +402,10 @@ sub Sort_File_Approx {
                 }
             }
         }         ## End each index
-        ## for debugging print STDOUT - this is commented out for now.
-        ## print STDOUT "$comment ";
+        ## to debug - print comment to standard out
+        if ($options{debug} == 1) {
+            print STDOUT "$comment ";
+        }
         ## set counters to zero for each type we are looking for, only move forward if found
         my $fwd_valid = 0;
         my $rev_valid = 0;
@@ -767,6 +771,14 @@ sub Read_indices {
 }
 ## Here we create the overall summary file
 sub End_Handler {
+    print $log "Index used: $options{index}\n";
+    print $log "Input file: $options{input}\n";
+    if ( ! defined $options{insertion} && ! defined $options{deletion} &&
+            ! defined $options{substitution} ) {
+        print $log "Direct match used";
+    } else {
+        print $log "String::Approx matching used: I$options{insertion},D$options{deletion},S$options{substitution}\n";
+    }
     print $log "${observed_reads} reads were observed in total, of these:\n";
     foreach my $k (sort keys %observations) {
         if ($observations{$k} > 0 and $k ne 'sum') {
