@@ -42,3 +42,19 @@ The available options are:
 * summary:  File into which to write the summary of the results. (summary.txt)
 * unicyc_csv:  File to write the lengths of the unimolecular
   results. (unimolecular_cyclized_lengths.csv)
+
+## Installation
+
+```shell
+perl BUILD.PL
+./Build
+./Build test
+./Build install
+```
+
+## Examples
+
+```{shell}
+mkdir sizecount_out
+sizecount.pl --indices share/index.txt --outdir sizecount_out --input share/test.fastq
+```

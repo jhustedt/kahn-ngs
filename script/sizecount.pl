@@ -345,7 +345,6 @@ sub Sort_File_Approx {
                 $found++;
                 $found_id = $index;
                 for my $st (@starts) {
-                    print "TESTME: @starts\n";
                    $comment .= "$st:$info->{name}:$info->{number}:$info->{direction} ";
                     ## where "st" is position within read, info name and number identify the index, and direction identifies fwd or rev
                     if ($info->{name} eq 'helical' && $info->{direction} eq 'fwd') {
