@@ -600,7 +600,7 @@ sub Sort_File_Approx {
             }
             $comment .= "cyclized type: ${cyclized} ";
         }
-        ## Note to Trey - found_two_bi here
+        ## Scan for bimolecular products from B-B ligations
         if ($observed_indices == 2 && $observe{stepcyc_fwd} > 0 && $observe{stepcyc_rev} > 0) {
             my @pieces = split(/\s+/, $comment);
             for my $p (@pieces) {
@@ -611,7 +611,7 @@ sub Sort_File_Approx {
                     $stepcycrev = $name;
                 }
             }
-            ## note to trey - not sure the name change here is necessary
+            ## counting here just looks at the total size, as they can be separated using this in itself
             my $final_bi2_size = $stepcycfwd + $stepcycrev;
             if ($positions{stepcyc_fwd} < $positions{stepcyc_rev}) {
                 $found_two_bi++;
@@ -699,8 +699,6 @@ ${qual}
     }
     return($data);
 }
-## Done sorting 4 hits, now sort 6 & 2 for different bimolecular interactions
-## sorting for 6 hits will go here
 sub Sort_Dir {
     my %args = @_;
     my $cwd_dir = getcwd();
@@ -783,7 +781,7 @@ sub End_Handler {
     foreach my $k (sort keys %observations) {
         if ($observations{$k} > 0 and $k ne 'sum') {
             ## Here we print how many times each individual index class was observed (regardless of if any other indices were found within that sequence). An index class is either the large variable region, small (helical) variable region, or synthesis variable region.
-            print $log "The read type: ${k} was observed: $observations{$k} times.\n";
+            print $log "     The read type: ${k} was observed: $observations{$k} times.\n";
         }
     }
     ## how many times single, double...seven index sequences were found & how many times individual index classes were found within them.
@@ -791,7 +789,7 @@ sub End_Handler {
         print $log "$singles{sum} single-index reads were observed, including:\n";
         foreach my $k (sort keys %singles) {
             if ($singles{$k} > 0 and $k ne 'sum') {
-                print $log "The read type: ${k} was observed: $singles{$k} times.\n";
+                print $log "     The read type: ${k} was observed: $singles{$k} times.\n";
             }
         }
     }
@@ -799,7 +797,7 @@ sub End_Handler {
         print $log "$doubles{sum} double-index reads were observed, including:\n";
         foreach my $k (sort keys %doubles) {
             if ($doubles{$k} > 0 and $k ne 'sum') {
-                print $log "The read type: ${k} was observed: $doubles{$k} times.\n";
+                print $log "     The read type: ${k} was observed: $doubles{$k} times.\n";
             }
         }
     }
@@ -807,7 +805,7 @@ sub End_Handler {
         print $log "$triples{sum} triple-index reads were observed, including:\n";
         foreach my $k (sort keys %triples) {
             if ($triples{$k} > 0 and $k ne 'sum') {
-                print $log "The read type: ${k} was observed: $triples{$k} times.\n";
+                print $log "     The read type: ${k} was observed: $triples{$k} times.\n";
             }
         }
     }
@@ -815,7 +813,7 @@ sub End_Handler {
         print $log "$quads{sum} 4-index reads were observed, including:\n";
         foreach my $k (sort keys %quads) {
             if ($quads{$k} > 0 and $k ne 'sum') {
-                print $log "The read type: ${k} was observed: $quads{$k} times.\n";
+                print $log "     The read type: ${k} was observed: $quads{$k} times.\n";
             }
         }
     }
@@ -823,7 +821,7 @@ sub End_Handler {
         print $log "$fives{sum} 5-index reads were observed, including:\n";
         foreach my $k (sort keys %fives) {
             if ($fives{$k} > 0 and $k ne 'sum') {
-                print $log "The read type: ${k} was observed: $fives{$k} times.\n";
+                print $log "     The read type: ${k} was observed: $fives{$k} times.\n";
             }
         }
     }
@@ -831,7 +829,7 @@ sub End_Handler {
         print $log "$sixes{sum} 6-index reads were observed, including:\n";
         foreach my $k (sort keys %sixes) {
             if ($sixes{$k} > 0 and $k ne 'sum') {
-                print $log "The read type: ${k} was observed: $sixes{$k} times.\n";
+                print $log "     The read type: ${k} was observed: $sixes{$k} times.\n";
             }
         }
     }
@@ -839,7 +837,7 @@ sub End_Handler {
         print $log "$sevens{sum} 7-index reads were observed, including:\n";
         foreach my $k (sort keys %sevens) {
             if ($sevens{$k} > 0 and $k ne 'sum') {
-                print $log "The read type: ${k} was observed: $sevens{$k} times.\n";
+                print $log "     The read type: ${k} was observed: $sevens{$k} times.\n";
             }
         }
     }
@@ -847,7 +845,7 @@ sub End_Handler {
         print $log "$eights{sum} 8-index reads were observed, including:\n";
         foreach my $k (sort keys %eights) {
             if ($eights{$k} > 0 and $k ne 'sum') {
-                print $log "The read type: ${k} was observed: $eights{$k} times.\n";
+                print $log "     The read type: ${k} was observed: $eights{$k} times.\n";
             }
         }
     }
@@ -855,7 +853,7 @@ sub End_Handler {
         print $log "$nines{sum} 9-index reads were observed, including:\n";
         foreach my $k (sort keys %nines) {
             if ($nines{$k} > 0 and $k ne 'sum') {
-                print $log "The read type: ${k} was observed: $nines{$k} times.\n";
+                print $log "     The read type: ${k} was observed: $nines{$k} times.\n";
             }
         }
     }
@@ -863,7 +861,7 @@ sub End_Handler {
         print $log "$tens{sum} 10-index reads were observed, including:\n";
         foreach my $k (sort keys %tens) {
             if ($tens{$k} > 0 and $k ne 'sum') {
-                print $log "The read type: ${k} was observed: $tens{$k} times.\n";
+                print $log "     The read type: ${k} was observed: $tens{$k} times.\n";
             }
         }
     }
@@ -871,7 +869,7 @@ sub End_Handler {
         print $log "$elevenup{sum} 11 or more-index reads were observed, including:\n";
         foreach my $k (sort keys %elevenup) {
             if ($elevenup{$k} > 0 and $k ne 'sum') {
-                print $log "The read type: ${k} was observed: $elevenup{$k} times.\n";
+                print $log "     The read type: ${k} was observed: $elevenup{$k} times.\n";
             }
         }
     }
@@ -906,6 +904,7 @@ sub End_Handler {
             print $bicyc6_csv "$k,$bicyclized6_final_lengths{$k}\n";
         }
     }
+    print $log "${found_six_unknown} reads had six hits and were unknown\n";
     print $log "${found_two_bi} reads had two hits and were bimolecular:\n";
     foreach my $k (sort keys %bicyclized2_final_lengths) {
         print $log "Size $k was found $bicyclized2_final_lengths{$k} times and cyclized (bimolecular).\n";
