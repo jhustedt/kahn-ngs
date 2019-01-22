@@ -769,7 +769,7 @@ sub Read_indices {
 }
 ## Here we create the overall summary file
 sub End_Handler {
-    print $log "Index used: $options{index}\n";
+    print $log "Index used: $options{indices}\n";
     print $log "Input file: $options{input}\n";
     if ( ! defined $options{insertion} && ! defined $options{deletion} &&
             ! defined $options{substitution} ) {
