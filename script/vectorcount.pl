@@ -571,11 +571,6 @@ sub End_Handler {
     print $log "\n";
 
     $log->close();
-    $unicyc_csv->close();
-    $fourhitlin_csv->close();
-    $bicyc4_csv->close();
-    $bicyc6_csv->close();
-    $bicyc2_csv->close();
     $out->close();
     exit(0);
 }
