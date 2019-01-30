@@ -79,41 +79,41 @@ my %options = (
 ## This is a hash counting off how many times _every_ index is observed.
 my $observed_reads = 0;
 my %observations = (
-    ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0,
-    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0,);
+    ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0, ampprom_fwd => 0,
+    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0, ampprom_rev => 0,);
 my %singles = (
-    sum => 0, ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0,
-    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0,);
+    sum => 0, ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0, ampprom_fwd => 0,
+    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0, ampprom_rev => 0,);
 my %doubles = (
-    sum => 0, ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0,
-    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0,);
+    sum => 0, ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0, ampprom_fwd => 0,
+    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0, ampprom_rev => 0,);
 my %triples = (
-    sum => 0, ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0,
-    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0,);
+    sum => 0, ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0, ampprom_fwd => 0,
+    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0, ampprom_rev => 0,);
 my %quads = (
-    sum => 0, ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0,
-    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0,);
+    sum => 0, ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0, ampprom_fwd => 0,
+    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0, ampprom_rev => 0,);
 my %fives = (
-    sum => 0, ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0,
-    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0,);
+    sum => 0, ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0, ampprom_fwd => 0,
+    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0, ampprom_rev => 0,);
 my %sixes = (
-    sum => 0, ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0,
-    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0,);
+    sum => 0, ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0, ampprom_fwd => 0,
+    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0, ampprom_rev => 0,);
 my %sevens = (
-    sum => 0, ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0,
-    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0,);
+    sum => 0, ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0, ampprom_fwd => 0,
+    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0, ampprom_rev => 0,);
 my %eights = (
-    sum => 0, ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0,
-    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0,);
+    sum => 0, ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0, ampprom_fwd => 0,
+    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0, ampprom_rev => 0,);
 my %nines = (
-    sum => 0, ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0,
-    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0,);
+    sum => 0, ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0, ampprom_fwd => 0,
+    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0, ampprom_rev => 0,);
 my %tens = (
-    sum => 0, ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0,
-    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0,);
+    sum => 0, ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0, ampprom_fwd => 0,
+    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0, ampprom_rev => 0,);
 my %elevenup = (
-    sum => 0, ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0,
-    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0,);
+    sum => 0, ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0, ampprom_fwd => 0,
+    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0, ampprom_rev => 0,);
 
 my $opt_result = GetOptions(
     "debug:i" => \$options{debug},
@@ -218,16 +218,16 @@ sub Sort_File_Approx {
         ## I am creating a hash of observations for each sequence, and one for
         ## all sequences.
         my %observe = (
-            ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0,
-            ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0,
+            ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0, ampprom_fwd => 0,
+            ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0, ampprom_rev => 0,
             unknown => 0);
         my %positions = (
-            ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0,
-            ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0,
+            ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0, ampprom_fwd => 0,
+            ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0, ampprom_rev => 0,
             unknown => 0);
         my %numbers = (
-            ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0,
-            ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0,
+            ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0, ampprom_fwd => 0,
+            ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0, ampprom_rev => 0,
             unknown => 0);
         my $observed_indices = 0;
         foreach my $index (@index_list) {
@@ -278,6 +278,12 @@ sub Sort_File_Approx {
                         $positions{variable_fwd} = $st;
                         $observed_indices++;
                         $numbers{variable_fwd} = $info->{number};
+                    } elsif ($info->{name} eq 'ampprom' && $info->{direction} eq 'fwd') {
+                        $observations{ampprom_fwd}++;
+                        $observe{ampprom_fwd}++;
+                        $positions{ampprom_fwd} = $st;
+                        $observed_indices++;
+                        $numbers{ampprom_fwd} = $info->{number};
                     } elsif ($info->{name} eq 'ampr' && $info->{direction} eq 'rev') {
                         $observations{ampr_rev}++;
                         $observe{ampr_rev}++;
@@ -302,6 +308,12 @@ sub Sort_File_Approx {
                         $positions{variable_rev} = $st;
                         $observed_indices++;
                         $numbers{variable_rev} = $info->{number};
+                    } elsif ($info->{name} eq 'ampprom' && $info->{direction} eq 'rev') {
+                        $observations{ampprom_rev}++;
+                        $observe{ampprom_rev}++;
+                        $positions{ampprom_rev} = $st;
+                        $observed_indices++;
+                        $numbers{ampprom_rev} = $info->{number};
                     }
                 }
             }
@@ -326,6 +338,8 @@ sub Sort_File_Approx {
         my $foriginrev = 0;
         my $pucoriginfwd = 0;
         my $pucoriginrev = 0;
+        my $amppromfwd = 0;
+        my $amppromrev = 0;
         ## append to the comment the number of observed indices.
         $comment .= "$count ";
         $comment .= " hits: ${observed_indices} ";

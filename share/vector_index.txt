@@ -1,5 +1,19 @@
 ## Each index is a sequence followed by a 3 word phrase: region_size_direction
 ## This file is portions of AmpR, origins, and common priming sequences.
+## portions of ampR "promoter" from pBR322 (not actually the promoter for AmpR production)
+## "promoter" is attgtctcatgagcggatacatatttgaa - at the end of 02 & start of 03, adjacent regions are present in 00,01,04,05
+actcatactcttcctttttc  ampprom_00_fwd
+aatattattgaagcatttat  ampprom_01_fwd
+cagggttattgtctcatgag  ampprom_02_fwd
+cggatacatatttgaatgta  ampprom_03_fwd
+tttagaaaaataaacaaata  ampprom_04_fwd
+ggggttccgcgcacatttcc  ampprom_05_fwd
+ggaaatgtgcgcggaacccc  ampprom_00_rev
+tatttgtttatttttctaaa  ampprom_01_rev
+tacattcaaatatgtatccg  ampprom_02_rev
+ctcatgagacaataaccctg  ampprom_03_rev
+ataaatgcttcaataatatt  ampprom_04_rev
+gaaaaaggaagagtatgagt  ampprom_05_rev
 ## portions of AmpR
 atgagtattcaacat  ampr_00_fwd
 ttccgtgtcgccctt  ampr_01_fwd
