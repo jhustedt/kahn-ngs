@@ -369,7 +369,7 @@ sub Sort_File_Approx {
         my $forigin = 0;
         my $pucorigin = 0;
         my $variable = 0;
-        my ampprom = 0;
+        my $ampprom = 0;
         my $phix = 0;
         my $illumina = 0;
         my $amprfwd = 0;
