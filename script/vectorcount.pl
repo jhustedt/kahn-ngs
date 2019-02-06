@@ -304,13 +304,13 @@ sub Sort_File_Approx {
                         $observations{illumina_fwd}++;
                         $observe{illumina_fwd}++;
                         $positions{illumina_fwd} = $st;
-                        $observed_indices++
+                        $observed_indices++;
                         $numbers{illumina_fwd} = $info->{number};
                     } elsif ($info->{name} eq 'phix' && $info->{direction} eq 'fwd') {
                         $observations{phix_fwd}++;
                         $observe{phix_fwd}++;
                         $positions{phix_fwd} = $st;
-                        $observed_indices++
+                        $observed_indices++;
                         $numbers{phix_fwd} = $info->{number};
                     } elsif ($info->{name} eq 'ampr' && $info->{direction} eq 'rev') {
                         $observations{ampr_rev}++;
