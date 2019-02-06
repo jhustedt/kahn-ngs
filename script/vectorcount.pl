@@ -39,27 +39,20 @@ $SIG{TERM} = \&End_Handler;
  --substitution : String::Approx (Levenshtein) substitution distance, default is 0 (perfect match)
  --insertion: Levenshtein insertion distance
  --deletion: Levenshtein deletion distance
- --spacer : specify spacer length (default 72)
  --debug  : Print a bunch of debugging output
 
 =head1 DESCRIPTION
 
-  This was originally a demultiplexer for TNSeq data, which has a very specific and
-  illumina-incompatible (bcl2fastq) format.  It was slightly reformatted to match
-  the following query:
-
-  1. The primary goal is to observe how many of every size DNA template was incorporated into
-     a sequencing library.  The implicit inference: when (DNA-size % ~10), the energetic
-     requirements for a DNA to loop back on itself decrease, increasing the likelihood that
-     the molecule can cyclize and therefore end up in the sequencing library.  Ergo, more
-     counts of a particular size is inversely related to the energy requirement.
-  2. The input molecules were designed so that each size is distinguishable by its sequence.
-  3. Four indices are used to distinguish molecule size (ranging 119-219 bp)
-  4. The important caveat: inter-molecular ligation is in a fight with intra-molecular ligation.
-     a. Ergo, we need to be aware of multiple indices for two reasons; first to tell the size
-        range, second because we need to be able to observe when size-a linearly ligates
-        to size-b and when size-a bimolecularly cyclizes with size-b.
-
+ This program has been written to look for sequences with known portions of contaminating DNA
+ and screen them out of a sequencing library.
+ 
+ To that end, the program will scan fastq files looking for the sequences associated with:
+ ColE1 origin of replication, AmpR gene, F1 origin of replication, common Illumina indexing primers,
+ the phi X-174 genome, a region that in pBR322 is 5' of AmpR and is an Amp promotor, and a vew misc
+ other portions of common vectors (M13 priming sequences, Lac operon, etc - identified here as "variable").
+ 
+ The sequences that are looked for are 20-25 nt segments of the above full sequences as defined in
+ the vector_index.txt file.
 
 =cut
 
@@ -71,7 +64,6 @@ my %options = (
     outdir => 'output',
     outfastq => 'out',
     summary => 'summary.txt',
-    spacer => 72,
     substitution => 0,
     insertion => 0,
     deletion => 0,
@@ -79,45 +71,68 @@ my %options = (
 ## This is a hash counting off how many times _every_ index is observed.
 my $observed_reads = 0;
 my %observations = (
-    ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0, ampprom_fwd => 0,
-    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0, ampprom_rev => 0,);
+    ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0,
+    ampprom_fwd => 0, illumina_fwd => 0, phix_fwd => 0,
+    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0,
+    ampprom_rev => 0, illumina_rev => 0, phix_rev => 0,);
 my %singles = (
-    sum => 0, ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0, ampprom_fwd => 0,
-    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0, ampprom_rev => 0,);
+    sum => 0, ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0,
+    ampprom_fwd => 0, illumina_fwd => 0, phix_fwd => 0,
+    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0,
+    ampprom_rev => 0, illumina_rev => 0, phix_rev => 0,);
 my %doubles = (
-    sum => 0, ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0, ampprom_fwd => 0,
-    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0, ampprom_rev => 0,);
+    sum => 0, ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0,
+    ampprom_fwd => 0, illumina_fwd => 0, phix_fwd => 0,
+    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0,
+    ampprom_rev => 0, illumina_rev => 0, phix_rev => 0,);
 my %triples = (
-    sum => 0, ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0, ampprom_fwd => 0,
-    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0, ampprom_rev => 0,);
+    sum => 0, ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0,
+    ampprom_fwd => 0, illumina_fwd => 0, phix_fwd => 0,
+    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0,
+    ampprom_rev => 0, illumina_rev => 0, phix_rev => 0,);
 my %quads = (
-    sum => 0, ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0, ampprom_fwd => 0,
-    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0, ampprom_rev => 0,);
+    sum => 0, ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0,
+    ampprom_fwd => 0, illumina_fwd => 0, phix_fwd => 0,
+    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0,
+    ampprom_rev => 0, illumina_rev => 0, phix_rev => 0,);
 my %fives = (
-    sum => 0, ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0, ampprom_fwd => 0,
-    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0, ampprom_rev => 0,);
+    sum => 0, ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0,
+    ampprom_fwd => 0, illumina_fwd => 0, phix_fwd => 0,
+    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0,
+    ampprom_rev => 0, illumina_rev => 0, phix_rev => 0,);
 my %sixes = (
-    sum => 0, ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0, ampprom_fwd => 0,
-    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0, ampprom_rev => 0,);
+    sum => 0, ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0,
+    ampprom_fwd => 0, illumina_fwd => 0, phix_fwd => 0,
+    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0,
+    ampprom_rev => 0, illumina_rev => 0, phix_rev => 0,);
 my %sevens = (
-    sum => 0, ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0, ampprom_fwd => 0,
-    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0, ampprom_rev => 0,);
+    sum => 0, ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0,
+    ampprom_fwd => 0, illumina_fwd => 0, phix_fwd => 0,
+    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0,
+    ampprom_rev => 0, illumina_rev => 0, phix_rev => 0,);
 my %eights = (
-    sum => 0, ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0, ampprom_fwd => 0,
-    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0, ampprom_rev => 0,);
+    sum => 0, ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0,
+    ampprom_fwd => 0, illumina_fwd => 0, phix_fwd => 0,
+    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0,
+    ampprom_rev => 0, illumina_rev => 0, phix_rev => 0,);
 my %nines = (
-    sum => 0, ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0, ampprom_fwd => 0,
-    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0, ampprom_rev => 0,);
+    sum => 0, ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0,
+    ampprom_fwd => 0, illumina_fwd => 0, phix_fwd => 0,
+    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0,
+    ampprom_rev => 0, illumina_rev => 0, phix_rev => 0,);
 my %tens = (
-    sum => 0, ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0, ampprom_fwd => 0,
-    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0, ampprom_rev => 0,);
+    sum => 0, ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0,
+    ampprom_fwd => 0, illumina_fwd => 0, phix_fwd => 0,
+    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0,
+    ampprom_rev => 0, illumina_rev => 0, phix_rev => 0,);
 my %elevenup = (
-    sum => 0, ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0, ampprom_fwd => 0,
-    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0, ampprom_rev => 0,);
+    sum => 0, ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0,
+    ampprom_fwd => 0, illumina_fwd => 0, phix_fwd => 0,
+    ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0,
+    ampprom_rev => 0, illumina_rev => 0, phix_rev => 0,);
 
 my $opt_result = GetOptions(
     "debug:i" => \$options{debug},
-    "spacer:i" => \$options{spacer},
     "indices:s" => \$options{indices},
     "input:s" => \$options{input},
     "outdir:s" => \$options{outdir},
@@ -128,7 +143,7 @@ my $opt_result = GetOptions(
     "deletion:i" => \$options{deletion},
 );
 my $log = new FileHandle(">$options{outdir}/$options{summary}");
-## This checks to see that the options for index, input, and output directory exist and provides an error if they do not.
+## This checks to see that the options for index, input, and output directory exist.
 if (!-r $options{input}) {
     die("The input file: $options{input} does not exist.");
 }
@@ -143,7 +158,8 @@ my $index_hash = Read_indices();
 ## look at input file, if file, read, if dir, look in dir and read internal
 ## files
 
-## Create an empty output fastq file into which we will copy the extant data and new fun comments.
+## Create an empty output fastq file into which we will copy the extant data
+## and new comments.
 my $abs_input = File::Spec->rel2abs($options{input});
 my $fastq_output = qq"$options{outdir}/$options{outfastq}.fastq.gz";
 my $abs_output = File::Spec->rel2abs($fastq_output);
@@ -212,23 +228,23 @@ sub Sort_File_Approx {
         ##         number => 10, found => 0, total_observed => 0,
         ##         ambiguous_observed => 0, unique_observed => 0 }, },
         my $found_id = '';
-        ## substring looking from 0-9, switched to regular expression match to
-        ## scan full seq line my $match_substring = substr($sequence, 0, 9);
-
         ## I am creating a hash of observations for each sequence, and one for
         ## all sequences.
         my %observe = (
-            ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0, ampprom_fwd => 0,
-            ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0, ampprom_rev => 0,
-            unknown => 0);
+            ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0,
+            ampprom_fwd => 0, illumina_fwd => 0, phix_fwd => 0,
+            ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0,
+            ampprom_rev => 0, illumina_rev => 0, phix_rev => 0, unknown => 0);
         my %positions = (
-            ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0, ampprom_fwd => 0,
-            ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0, ampprom_rev => 0,
-            unknown => 0);
+            ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0,
+            ampprom_fwd => 0, illumina_fwd => 0, phix_fwd => 0,
+            ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0,
+            ampprom_rev => 0, illumina_rev => 0, phix_rev => 0, unknown => 0);
         my %numbers = (
-            ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0, ampprom_fwd => 0,
-            ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0, ampprom_rev => 0,
-            unknown => 0);
+            ampr_fwd => 0, forigin_fwd => 0, variable_fwd => 0, pucorigin_fwd => 0,
+            ampprom_fwd => 0, illumina_fwd => 0, phix_fwd => 0,
+            ampr_rev => 0, forigin_rev => 0, variable_rev => 0, pucorigin_rev => 0,
+            ampprom_rev => 0, illumina_rev => 0, phix_rev => 0, unknown => 0);
         my $observed_indices = 0;
         foreach my $index (@index_list) {
             my $info = $data->{$index};
@@ -284,6 +300,18 @@ sub Sort_File_Approx {
                         $positions{ampprom_fwd} = $st;
                         $observed_indices++;
                         $numbers{ampprom_fwd} = $info->{number};
+                    } elsif ($info->{name} eq 'illumina' && $info->{direction} eq 'fwd') {
+                        $observations{illumina_fwd}++;
+                        $observe{illumina_fwd}++;
+                        $positions{illumina_fwd} = $st;
+                        $observed_indices++
+                        $numbers{illumina_fwd} = $info->{number};
+                    } elsif ($info->{name} eq 'phix' && $info->{direction} eq 'fwd') {
+                        $observations{phix_fwd}++;
+                        $observe{phix_fwd}++;
+                        $positions{phix_fwd} = $st;
+                        $observed_indices++
+                        $numbers{phix_fwd} = $info->{number};
                     } elsif ($info->{name} eq 'ampr' && $info->{direction} eq 'rev') {
                         $observations{ampr_rev}++;
                         $observe{ampr_rev}++;
@@ -314,6 +342,18 @@ sub Sort_File_Approx {
                         $positions{ampprom_rev} = $st;
                         $observed_indices++;
                         $numbers{ampprom_rev} = $info->{number};
+                    } elsif ($info->{name} eq 'illumina' && $info->{direction} eq 'rev') {
+                        $observations{illumina_rev}++;
+                        $observe{illumina_rev}++;
+                        $positions{illumina_rev} = $st;
+                        $observed_indices++;
+                        $numbers{illumina_rev} = $info->{number};
+                    } elsif ($info->{name} eq 'phix' && $info-> {direction} eq 'rev') {
+                        $observations{phix_rev}++;
+                        $observe{phix_rev}++;
+                        $positions{phix_rev} = $st;
+                        $observed_indices++;
+                        $numbers{phix_rev} = $info->{number};
                     }
                 }
             }
@@ -340,6 +380,10 @@ sub Sort_File_Approx {
         my $pucoriginrev = 0;
         my $amppromfwd = 0;
         my $amppromrev = 0;
+        my $illuminafwd = 0;
+        my $illuminarev = 0;
+        my $phixfwd = 0;
+        my $phixrev = 0;
         ## append to the comment the number of observed indices.
         $comment .= "$count ";
         $comment .= " hits: ${observed_indices} ";
