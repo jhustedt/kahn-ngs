@@ -135,12 +135,12 @@ my %options = (
     fourhitlin_csv => 'linear_fourhit_lengths.csv',
     fourhitlinfull_csv => 'linear_fourhit_lengths_full.csv',
     threehitlin_csv => 'linear_threehit_lengths.csv',
-    threehitlinfull_csv => 'linear_threehit_lenghts_full.csv',
+    threehitlinfull_csv => 'linear_threehit_lengths_full.csv',
     onehitlin_csv => 'linear_onehit_lengths.csv',
     bicyc4_csv => 'bimolecular4_ligated_lengths.csv',
     bicyc4full_csv => 'bimolecular4_ligated_lengths_full.csv',
     bicyc6_csv => 'bimolecular6_ligated_lengths.csv',
-    bicyc6full_csv => 'bimolecular6_ligated_lengths.csv',
+    bicyc6full_csv => 'bimolecular6_ligated_lengths_full.csv',
     bicyc5_csv => 'bimolecular5_ligated_lengths.csv',
     bicyc5full_csv => 'bimolecular5_ligated_lengths_full.csv',
     bicyc5frag_csv => 'bimolecular5_ligated_lengths_frag.csv',
@@ -634,7 +634,7 @@ sub Sort_File_Approx {
                     $stepsynthfwd = $name;
                 }
             }
-            my $final_size = $options{spacer} + $helical + $stepsynth + $variable;
+            my $final_size = $options{spacer} + $helicalfwd + $stepsynthfwd + $variablefwd;
             $comment .= "$count final size: $final_size ";
             if ($positions{helical_fwd} < $positions{variable_fwd} &&
                 $positions{variable_fwd} < $positions{stepsynth_fwd}) {
@@ -668,7 +668,7 @@ sub Sort_File_Approx {
                     $stepsynthrev = $name;
                 }
             }
-            my $final_size = $options{spacer} + $helical + $stepsynth + $variable;
+            my $final_size = $options{spacer} + $helicalrev + $stepsynthrev + $variablerev;
             $comment .= "$count final size: $final_size ";
             if ($positions{helical_rev} > $positions{variable_rev} &&
                 $positions{variable_rev} > $positions{stepsynth_rev}) {
@@ -699,7 +699,7 @@ sub Sort_File_Approx {
                     $stepcycfwd = $name;
                 }
             }
-            my $final_size = $stepcyc;
+            my $final_size = $stepcycfwd;
             $comment .= "$count final size: $final_size ";
             $found_one_lin++;
             $type = "linear-1";
@@ -718,7 +718,7 @@ sub Sort_File_Approx {
                     $stepcycrev = $name;
                 }
             }
-            my $final_size = $stepcyc;
+            my $final_size = $stepcycrev;
             $comment .= "$count final size: $final_size ";
             $found_one_lin++;
             $type = "linear-1";
