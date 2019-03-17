@@ -680,7 +680,7 @@ sub Sort_File_Approx {
                     $linear3_final_lengths{$final_size}++;
                 }
                 if (!defined($linear3_full_final_lengths{$numbers{stepsynth_rev},$numbers{variable_rev},$numbers{helical_rev}})) {
-                    $linear3_full_final_lengths{$numbers{stepsynth_rev},$numbers{variable_rev},$numbers{helical_rev}} = 1:
+                    $linear3_full_final_lengths{$numbers{stepsynth_rev},$numbers{variable_rev},$numbers{helical_rev}} = 1;
                 } else {
                     $linear3_full_final_lengths{$numbers{stepsynth_rev},$numbers{variable_rev},$numbers{helical_rev}}++;
                 }
