@@ -193,6 +193,7 @@ my %elevenup = (
     helical_rev => 0, stepcyc_rev => 0, variable_rev => 0, stepsynth_rev => 0,);
 ## Here I set up tags for counting all when all four are found unimolecular, when all four are found bimolecular, when all six are found biomolecular, and appropriate final lengths outputs for each
 ## currently this works by looking at the total summed length and not the individual makeup of the molecule.
+my $datestring = localtime();
 my $found_all_four = 0;
 my $found_four_uni = 0;
 my $found_four_lin = 0;
@@ -1075,6 +1076,7 @@ sub Read_indices {
 sub End_Handler {
     print $log "Index used: $options{indices}\n";
     print $log "Input file: $options{input}\n";
+    print $log "Date and time run $datestring\n";
     if ( ! defined $options{insertion} && ! defined $options{deletion} &&
             ! defined $options{substitution} ) {
         print $log "Direct match used";
