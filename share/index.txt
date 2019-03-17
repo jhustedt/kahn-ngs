@@ -28,18 +28,18 @@ GCATCATCGAGTCCGAG  helical_01_rev
 GCATCATCGATCCGAG  helical_00_rev
 
 ## large step-wise addition on cyclization side (XhoI)
-GAGATATACGAGGAG  stepcyc_47_fwd
-CGAAGTGGTCTGCAA  stepcyc_77_fwd
+GAGATATACGAGGAG  stepcyc_047_fwd
+CGAAGTGGTCTGCAA  stepcyc_077_fwd
 CTCTTACTGTCATGC  stepcyc_107_fwd
-CTCCTCGTATATCTC  stepcyc_47_rev
-TTGCAGACCACTTCG  stepcyc_77_rev
+CTCCTCGTATATCTC  stepcyc_047_rev
+TTGCAGACCACTTCG  stepcyc_077_rev
 GCATGACAGTAAGAG  stepcyc_107_rev
 ## same portion on synthesis side (between BstEII and large variable region)
-CCTGACTCCCCGTCG  stepsynth_47_fwd
-CAGCCGGAAGGCCGA  stepsynth_77_fwd
+CCTGACTCCCCGTCG  stepsynth_047_fwd
+CAGCCGGAAGGCCGA  stepsynth_077_fwd
 TTATGGCAGCACTGC  stepsynth_107_fwd
-CGACGGGGAGTCAGG  stepsynth_47_rev
-TCGGCCTTCCGGCTG  stepsynth_77_rev
+CGACGGGGAGTCAGG  stepsynth_047_rev
+TCGGCCTTCCGGCTG  stepsynth_077_rev
 GCAGTGCTGCCATAA  stepsynth_107_rev
 ## if stepsynth+stepcyc match in # & direction, they are from the same addition, if they are different, this molecule is bimolecular.
 

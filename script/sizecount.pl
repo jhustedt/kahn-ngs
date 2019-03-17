@@ -96,7 +96,7 @@ $SIG{TERM} = \&End_Handler;
         -aindex() no longer allows for unwanted insertions or deletions, but is not finding every match
          that it should
 
- updates for 2018-12-02
+ Updates for 2018-12-02
  1) aindex still is not finding what I would expect, but index is better
  2) I have added counters for six hit bimolecular cyclization & two hit bimolecular cyclization.
     a) I don't do anything with these other than count their existence.
@@ -107,18 +107,18 @@ $SIG{TERM} = \&End_Handler;
     a) added logs for six hit and two hit bimolecular
  2) separated logs for bimolecular products - 2 hit, 4 hit, and 6 hit are reported in separate csv files
 
+ Updates for 2019-03-12
+ 1) added matching for 3 hit unreacted (or dead end multimer).
+ 2) added matching for 1 hit unreacted (or dead end multimer).
+ 3) fixed 6-hit directionality
+ 4) added five hit bimolecular matching
+ 5) index file numbers changed for size class variant indices to include a leading zero in 47 and 77
+    this is to make nomenclature uniform, all hits should report out as 3 digits size class, 2 digits
+    variable index, 2 digits helical index. e.g. "0473010" - this allows for the index file input to take numbers directly and not need to reformat them here.
+ 6) full size description csv files will be generated with hits asigned to each index as approrpiate
+ 
  Needed to be fixed:
  1) fix aindex to find all direct matches and those with a single substitution
- 2) Separate out hits based not only on size (already done) and cyclization status (already
- done) but which molecule they came from. Ideally something like:
-  47-30-10,165,2000
- -Where the components say that the three index sizes obtained (47, 30, and 10) built a molecule
- of size 165, and it was found 2000 times. Currently this is ignored and the count is solely
- based on size, such that 47-30-10, 77-00-10, and 77-10-00 (and all iterations 77-01-09...77-09-01)
- are all included into the count of 165. While it is important that this total size of DNA cyclized
- (or did not cyclize), I cannot currently remove bias from library input if I don't know which of
- the individual molecules contributed to the overall count.
-
 
 =cut
 
@@ -130,11 +130,21 @@ my %options = (
     outdir => 'output',
     outfastq => 'out',
     summary => 'summary.txt',
-    unicyc_csv => 'unimolecular_cyclized_lengths.csv',
-    fourhitlin_csv => 'unimolecular_linear_lengths.csv',
-    bicyc4_csv => 'bimolecular4_cyclized_lengths.csv',
-    bicyc6_csv => 'bimolecular6_cyclized_lengths.csv',
-    bicyc2_csv => 'bimolecular2_cyclized_lengths.csv',
+    unicyc_csv => 'unimolecular_ligated_lengths.csv',
+    unicycfull_csv => 'unimolecular_ligated_lengths_full.csv',
+    fourhitlin_csv => 'linear_fourhit_lengths.csv',
+    fourhitlinfull_csv => 'linear_fourhit_lengths_full.csv',
+    threehitlin_csv => 'linear_threehit_lengths.csv',
+    threehitlinfull_csv => 'linear_threehit_lenghts_full.csv',
+    onehitlin_csv => 'linear_onehit_lengths.csv',
+    bicyc4_csv => 'bimolecular4_ligated_lengths.csv',
+    bicyc4full_csv => 'bimolecular4_ligated_lengths_full.csv',
+    bicyc6_csv => 'bimolecular6_ligated_lengths.csv',
+    bicyc6full_csv => 'bimolecular6_ligated_lengths.csv',
+    bicyc5_csv => 'bimolecular5_ligated_lengths.csv',
+    bicyc5full_csv => 'bimolecular5_ligated_lengths_full.csv',
+    bicyc2_csv => 'bimolecular2_ligated_lengths.csv',
+    bicyc2full_csv => 'bimolecular2_ligated_lengths_full.csv',
     spacer => 72,
     substitution => 0,
     insertion => 0,
@@ -185,21 +195,33 @@ my %elevenup = (
 my $found_all_four = 0;
 my $found_four_uni = 0;
 my $found_four_lin = 0;
+my $found_three_lin = 0;
+my $found_one_lin = 0;
+my $found_three_unknown = 0;
+my $found_one_unknown = 0;
 my $found_four_unknown = 0;
 my %unicyclized4_final_lengths = ();
+my %unicyclized4_full_final_lengths = ();
 my %linear4_final_lengths = ();
+my %linear4_full_final_lengths = ();
+my %linear3_final_lengths = ();
+my %linear3_full_final_lengths = ();
+my %linear1_final_lengths = ();
 my $found_four_bi = 0;
 my %bicyclized4_final_lengths = ();
+my %bicyclized4_full_final_lengths = ();
 my $found_six_bi = 0;
 my $found_six_unknown = 0;
 my %bicyclized6_final_lengths = ();
+my %bicyclized6_full_final_lengths = ();
+my $found_five_bi = 0;
+my $found_five_unknown = 0;
+my %bicyclized5_final_lengths = ();
+my %bicyclized5_full_final_lengths = ();
 my $found_two_bi = 0;
 my $found_two_unknown = 0;
-## for bicyclized 2 (in an A-A/B-B bimolecular cyclization) the final states only have 6 options.
-## I am calling this a "final state" even though it will be output as a size,count as with others
-## the size options will essentially be stepcyc size combinations (i.e. 47+47, 47+77, 47+107, etc)
 my %bicyclized2_final_lengths = ();
-
+my %bicyclized2_full_final_lengths = ();
 my $opt_result = GetOptions(
     "debug:i" => \$options{debug},
     "spacer:i" => \$options{spacer},
@@ -208,10 +230,20 @@ my $opt_result = GetOptions(
     "outdir:s" => \$options{outdir},
     "summary:s" => \$options{summary},
     "unicyc_csv:s" => \$options{unicyc_csv},
+    "unicycfull_csv:s" => \$options{unicycfull_csv},
     "fourhitlin_csv:s" => \$options{fourhitlin_csv},
+    "fourhitlinfull_csv:s" => \$options{fourhitlinfull_csv},
+    "threehitlin_csv:s" => \$options{threehitlin_csv},
+    "threehitlinfull_csv:s" => \$options{threehitlinfull_csv},
+    "onehitlin_csv:s" => \$options{onehitlin_csv},
     "bicyc4_csv:s" => \$options{bicyc4_csv},
+    "bicyc4full_csv:s" => \$options{bicyc4full_csv},
     "bicyc6_csv:s" => \$options{bicyc6_csv},
+    "bicyc6full_csv:s" => \$options{bicyc6full_csv},
+    "bicyc5_csv:s" => \$options{bicyc5_csv},
+    "bicyc5full_csv:s" => \$options{bicyc5full_csv},
     "bicyc2_csv:s" => \$options{bicyc2_csv},
+    "bicyc2full_csv:s" => \$options{bicyc2full_csv},
     "outfastq:s" => \$options{outfastq},
     "substitution:i" => \$options{substitution},
     "insertion:i" => \$options{insertion},
@@ -219,11 +251,20 @@ my $opt_result = GetOptions(
 );
 my $log = new FileHandle(">$options{outdir}/$options{summary}");
 my $unicyc_csv = new FileHandle(">$options{outdir}/$options{unicyc_csv}");
+my $unicycfull_csv = new FileHandle(">$options{outdir}/$options{unicycfull_csv}");
 my $fourhitlin_csv = new FileHandle(">$options{outdir}/$options{fourhitlin_csv}");
+my $fourhitlinfull_csv = new FileHandle(">$options{outdir}/$options{fourhitlinfull_csv}");
 my $bicyc4_csv = new FileHandle(">$options{outdir}/$options{bicyc4_csv}");
+my $bicyc4full_csv = new FileHandle(">$options{outdir}/$options{bicyc4full_csv}");
 my $bicyc6_csv = new FileHandle(">$options{outdir}/$options{bicyc6_csv}");
+my $bicyc6full_csv = new FileHandle(">$options{outdir}/$options{bicyc6full_csv}");
 my $bicyc2_csv = new FileHandle(">$options{outdir}/$options{bicyc2_csv}");
-
+my $bicyc2full_csv = new FileHandle(">$options{outdir}/$options{bicyc2full_csv}");
+my $bicyc5_csv = new FileHandle(">$options{outdir}/$options{bicyc5_csv}");
+my $bicyc5full_csv = new FileHandle(">$options{outdir}/$options{bicyc5full_csv}");
+my $threehitlin_csv = new FileHandle(">$options{outdir}/$options{threehitlin_csv}");
+my $threehitlinfull_csv = new FileHandle(">$options{outdir}/$options{threehitlinfull_csv}");
+my $onehitlin_csv = new FileHandle(">$options{outdir}/$options{onehitlin_csv}");
 ## This checks to see that the options for index, input, and output directory exist and provides an error if they do not.
 if (!-r $options{input}) {
     die("The input file: $options{input} does not exist.");
@@ -234,11 +275,9 @@ if (!-r $options{indices}) {
 if (!-d $options{outdir}) {
     die("The output directory $options{outdir} does not exist.");
 }
-
 my $index_hash = Read_indices();
 ## look at input file, if file, read, if dir, look in dir and read internal
 ## files
-
 ## Create an empty output fastq file into which we will copy the extant data and new fun comments.
 my $abs_input = File::Spec->rel2abs($options{input});
 my $fastq_output = qq"$options{outdir}/$options{outfastq}.fastq.gz";
@@ -251,7 +290,6 @@ if ($abs_input eq $abs_output) {
     ## my $with_ta = FileHandle->new("| gzip -f -9 > ${input_base}_ta.fastq.gz");
     $out = FileHandle->new("| gzip -f -9 > $fastq_output");
 }
-
 my $reads;
 if (-f $options{input}) {
     $reads = Sort_File_Approx(
@@ -310,7 +348,6 @@ sub Sort_File_Approx {
         my $found_id = '';
         ## substring looking from 0-9, switched to regular expression match to
         ## scan full seq line my $match_substring = substr($sequence, 0, 9);
-
         ## I am creating a hash of observations for each sequence, and one for
         ## all sequences.
         my %observe = (
@@ -422,9 +459,8 @@ sub Sort_File_Approx {
         my $stepcycrev = 0;
         my $stepsynthfwd = 0;
         my $stepsynthrev = 0;
+        my $type = "yes";
         ## Here we look only at files that have cyclized, count them, and place the count into its own csv
-        ## Note to Trey - does the following line actually do anything? I later set the status of cyclized, so i need to set it up here, but why is the quoted part "yes" here when numerous different options come later? these options used to be yes/no/unknown, but now are unimolecular, bimolecular-4, linear, and unknown
-        my $cyclized = "yes";
         ## first check that four indices are observed & they are the four we expect to see for a unimolecular cyclization
         if ($observed_indices == 4 && $observe{stepsynth_fwd} > 0 && $observe{helical_fwd} > 0 &&
                 $observe{stepcyc_fwd} > 0 && $observe{variable_fwd} > 0) {
@@ -452,45 +488,59 @@ sub Sort_File_Approx {
                     $positions{helical_fwd} < $positions{variable_fwd} &&
                     $positions{variable_fwd} < $positions{stepsynth_fwd} &&
                     $numbers{stepsynth_fwd} == $numbers{stepcyc_fwd}) {
-                $cyclized = "unimolecular";
+                $type = "unimolecular";
                 $found_four_uni++;
                 if (!defined($unicyclized4_final_lengths{$final_size})) {
                     $unicyclized4_final_lengths{$final_size} = 1;
                 } else {
                     $unicyclized4_final_lengths{$final_size}++;
                 }
+                if (!defined($unicyclized4_full_final_lengths{$numbers{stepsynth_fwd}$numbers{variable_fwd}$numbers{helical_fwd}})) {
+                    $unicyclized4_full_final_lengths{$numbers{stepsynth_fwd}$numbers{variable_fwd}$numbers{helical_fwd}} = 1;
+                } else {
+                    $unicyclized4_full_final_lengths{$numbers{stepsynth_fwd}$numbers{variable_fwd}$numbers{helical_fwd}}++;
+                }
                 ## if stepsynth & stepcyc do not match, but the order is still the same, this is a bimolecular A to B cyclization
             } elsif ($positions{stepcyc_fwd} < $positions{helical_fwd} &&
                          $positions{helical_fwd} < $positions{variable_fwd} &&
                          $positions{variable_fwd} < $positions{stepsynth_fwd} &&
                          $numbers{stepsynth_fwd} != $numbers{stepcyc_fwd}) {
-                $cyclized = "bimolecular-4";
+                $type = "bimolecular-4";
                 $found_four_bi++;
                 if (!defined($bicyclized4_final_lengths{$final_size})) {
                     $bicyclized4_final_lengths{$final_size} = 1;
                 } else {
                     $bicyclized4_final_lengths{$final_size}++;
                 }
+                if (!defined($bicyclized4_full_final_lengths{$numbers{stepsynth_fwd}$numbers{variable_fwd}$numbers{helical_fwd}})) {
+                    $bicyclized4_full_final_lengths{$numbers{stepsynth_fwd}$numbers{variable_fwd}$numbers{helical_fwd}} = 1;
+                } else {
+                    $bicyclized4_full_final_lengths{$numbers{stepsynth_fwd}$numbers{variable_fwd}$numbers{helical_fwd}}++;
+                }
                 ## if order is that of initial library we count up linear molecules
             } elsif ($positions{helical_fwd} < $positions{variable_fwd} &&
                          $positions{variable_fwd} < $positions{stepsynth_fwd} &&
                          $positions{stepsynth_fwd} < $positions{stepcyc_fwd}) {
-                $cyclized = "linear";
+                $type = "linear";
                 $found_four_lin++;
                 if (!defined($linear4_final_lengths{$final_size})) {
                     $linear4_final_lengths{$final_size} = 1;
                 } else {
                     $linear4_final_lengths{$final_size}++;
                 }
+                if (!defined($linear4_full_final_lengths{$numbers{stepsynth_fwd}$numbers{variable_fwd}$numbers{helical_fwd}})) {
+                    $linear4_full_final_lengths{$numbers{stepsynth_fwd}$numbers{variable_fwd}$numbers{helical_fwd}} = 1;
+                } else {
+                    $linear4_full_final_lengths{$numbers{stepsynth_fwd}$numbers{variable_fwd}$numbers{helical_fwd}}++;
+                }
             } else {
-                $cyclized = "unknown";
+                $type = "unknown4hit";
                 $found_four_unknown++;
             }
             ## here we append the status of "cyclized" to the comment line, options for 4 hits are: unimolecular, bimolecular-4, linear, and unknown
-            $comment .= "cyclized type: ${cyclized} ";
+            $comment .= "cyclized type: ${type} ";
         }
         ## now we look at the same thing as above, but for reverse molecules
-        ## Note to Trey - should this be an elsif?
         if ($observed_indices == 4 && $observe{stepsynth_rev} > 0 && $observe{helical_rev} > 0 &&
                 $observe{stepcyc_rev} > 0 && $observe{variable_rev} > 0) {
             $rev_valid = 1;
@@ -515,45 +565,275 @@ sub Sort_File_Approx {
                     $positions{helical_rev} > $positions{variable_rev} &&
                     $positions{variable_rev} > $positions{stepsynth_rev} &&
                     $numbers{stepsynth_rev} == $numbers{stepcyc_rev}) {
-                $cyclized = "unimolecular";
+                $type = "unimolecular";
                 $found_four_uni++;
                 if (!defined($unicyclized4_final_lengths{$final_size})) {
                     $unicyclized4_final_lengths{$final_size} = 1;
                 } else {
                     $unicyclized4_final_lengths{$final_size}++;
                 }
-                ## if stepsynth & stepcyc do not match, but the order is still the same, this is a bimolecular A to B cyclization
+                if (!defined($unicyclized4_full_final_lengths{$numbers{stepsynth_rev}$numbers{variable_rev}$numbers{helical_rev}})) {
+                    $unicyclized4_full_final_lengths{$numbers{stepsynth_rev}$numbers{variable_rev}$numbers{helical_rev}} = 1;
+                } else {
+                    $unicyclized4_full_final_lengths{$numbers{stepsynth_rev}$numbers{variable_rev}$numbers{helical_rev}}++;
+                }
+                ## if stepsynth & stepcyc do not match, but the order is still the same, this is a bimolecular A-B ligation
             } elsif ($positions{stepcyc_rev} > $positions{helical_rev} &&
                          $positions{helical_rev} > $positions{variable_rev} &&
                          $positions{variable_rev} > $positions{stepsynth_rev} &&
                          $numbers{stepsynth_rev} != $numbers{stepcyc_rev}) {
-                $cyclized = "bimolecular-4";
+                $type = "bimolecular-4";
                 $found_four_bi++;
                 if (!defined($bicyclized4_final_lengths{$final_size})) {
                     $bicyclized4_final_lengths{$final_size} = 1;
                 } else {
                     $bicyclized4_final_lengths{$final_size}++;
                 }
-                                ## if order is that of initial library we count up linear molecules
+                if (!defined($bicyclized4_full_final_lengths{$numbers{stepsynth_rev}$numbers{variable_rev}$numbers{helical_rev}})) {
+                    $bicyclized4_full_final_lengths{$numbers{stepsynth_rev}$numbers{variable_rev}$numbers{helical_rev}} = 1;
+                } else {
+                    $bicyclized4_full_final_lengths{$numbers{stepsynth_rev}$numbers{variable_rev}$numbers{helical_rev}}++;
+                }
+            ## if order is that of initial library we count up linear molecules
             } elsif ($positions{helical_rev} > $positions{variable_rev} &&
                          $positions{variable_rev} > $positions{stepsynth_rev} &&
                          $positions{stepsynth_rev} > $positions{stepcyc_rev}) {
-                $cyclized = "linear";
+                $type = "linear4";
                 $found_four_lin++;
                 if (!defined($linear4_final_lengths{$final_size})) {
                     $linear4_final_lengths{$final_size} = 1;
                 } else {
                     $linear4_final_lengths{$final_size}++;
                 }
+                if (!defined($linear4_full_final_lengths{$numbers{stepsynth_rev}$numbers{variable_rev}$numbers{helical_rev}})) {
+                    $linear4_full_final_lengths{$numbers{stepsynth_rev}$numbers{variable_rev}$numbers{helical_rev}} = 1;
+                } else {
+                    $linear4_full_final_lengths{$numbers{stepsynth_rev}$numbers{variable_rev}$numbers{helical_rev}}++;
+                }
             } else {
-                $cyclized = "unknown";
+                $type = "unknown4hit";
                 $found_four_unknown++;
             }
                                 ## here we append the status of "cyclized" to the comment line, options for 4 hits are: unimolecular, bimolecular-4, linear, and unknown
-            $comment .= "cyclized type: ${cyclized} ";
+            $comment .= "cyclized type: ${type} ";
         }
-        ## I believe this is the best place to add the found 6 bi & found 2 bi check - likely as elsif
-        ## Note to Trey - I have written what will at least be the start of a found_six_bi here, I don't yet know how I wish to count these, so right now I'm just identifying that they exist, iterating up their count for the summary file, and moving on.
+        ## looking at triple index hits
+        if ($observed_indices == 3 && $observe{helical_fwd} > 0 && $observe{variable_fwd} > 0 && $observe{stepsynth_fwd} > 0) {
+            my @pieces = split(/\s+/, $comment);
+            for my $p (@pieces) {
+                my ($position, $piece, $name, $dir) = split(/:/, $p);
+                if ($piece eq 'helical' && $dir eq 'fwd') {
+                    $helicalfwd = $name;
+                } elsif ($piece eq 'variable' && $dir eq 'fwd') {
+                    $variablefwd = $name;
+                } elsif ($piece eq 'stepsynth' && $dir eq 'fwd') {
+                    $stepsynthfwd = $name;
+                }
+            }
+            my $final_size = $options{spacer} + $helical + $stepsynth + $variable;
+            $comment .= "$count final size: $final_size ";
+            if ($positions{helical_fwd} < $positions{variable_fwd} &&
+                $positions{variable_fwd} < $positions{stepsynth_fwd}) {
+                $found_three_lin++;
+                $type = "linear-3";
+                if (!defined($linear3_final_lengths{$final_size})) {
+                    $linear3_final_lengths{$final_size} = 1;
+                } else {
+                    $linear3_final_lengths{$final_size}++;
+                }
+                if (!defined($linear3_full_final_lengths{$numbers{stepsynth_fwd}$numbers{variable_fwd}$numbers{helical_fwd}})) {
+                    $linear3_full_final_lengths{$numbers{stepsynth_fwd}$numbers{variable_fwd}$numbers{helical_fwd}} = 1;
+                } else {
+                    $linear3_full_final_lengths{$numbers{stepsynth_fwd}$numbers{variable_fwd}$numbers{helical_fwd}}++;
+                }
+            } else {
+                $type = "unknown3hit";
+                $found_three_unknown++;
+            }
+            $comment .= "type: ${type} ";
+        }
+        if ($observed_indices == 3 && $observe{helical_rev} > 0 && $observe{variable_rev} > 0 && $observe{stepsynth_rev} > 0) {
+            my @pieces = split(/\s+/, $comment);
+            for my $p (@pieces) {
+                my ($position, $piece, $name, $dir) = split(/:/, $p);
+                if ($piece eq 'helical' && $dir eq 'rev') {
+                    $helicalrev = $name;
+                } elsif ($piece eq 'variable' && $dir eq 'rev') {
+                    $variablerev = $name;
+                } elsif ($piece eq 'stepsynth' && $dir eq 'rev') {
+                    $stepsynthrev = $name;
+                }
+            }
+            my $final_size = $options{spacer} + $helical + $stepsynth + $variable;
+            $comment .= "$count final size: $final_size ";
+            if ($positions{helical_rev} > $positions{variable_rev} &&
+                $positions{variable_rev} > $positions{stepsynth_rev}) {
+                $found_three_lin++;
+                $type = "linear-3";
+                if (!defined($linear3_final_lengths{$final_size})) {
+                    $linear3_final_lengths{$final_size} = 1;
+                } else {
+                    $linear3_final_lengths{$final_size}++;
+                }
+                if (!defined($linear3_full_final_lengths{$numbers{stepsynth_rev}$numbers{variable_rev}$numbers{helical_rev}})) {
+                    $linear3_full_final_lengths{$numbers{stepsynth_rev}$numbers{variable_rev}$numbers{helical_rev}} = 1:
+                } else {
+                    $linear3_full_final_lengths{$numbers{stepsynth_rev}$numbers{variable_rev}$numbers{helical_rev}}++;
+                }
+            } else {
+                $type = "unknown3hit";
+                $found_three_unknown++;
+            }
+            $comment .= "type: ${type} ";
+        }
+        ## looking at single index hits
+        if ($observed_indices == 1 && $observe{stepcyc_fwd} > 0) {
+            my @pieces = split(/\s+/, $comment);
+            for my $p (@pieces) {
+                my ($position, $piece, $name, $dir) = split(/:/, $p);
+                if ($piece eq 'stepcyc' && $dir eq 'fwd') {
+                    $stepcycfwd = $name;
+                }
+            }
+            my $final_size = $stepcyc;
+            $comment .= "$count final size: $final_size ";
+            $found_one_lin++;
+            $type = "linear-1";
+            if (!defined($linear1_final_lengths{$final_size})) {
+                $linear1_final_lengths{$final_size} = 1;
+            } else {
+                $linear1_final_lengths{$final_size}++;
+            }
+            $comment .= "type: ${type} ";
+        }
+        if ($observed_indices == 1 && $observe{stepcyc_rev} > 0) {
+            my @pieces = split(/\s+/, $comment);
+            for my $p (@pieces) {
+                my ($position, $piece, $name, $dir) = split(/:/, $p);
+                if ($piece eq 'stepcyc' && $dir eq 'rev') {
+                    $stepcycrev = $name;
+                }
+            }
+            my $final_size = $stepcyc;
+            $comment .= "$count final size: $final_size ";
+            $found_one_lin++;
+            $type = "linear-1";
+            if (!defined($linear1_final_lengths{$final_size})) {
+                $linear1_final_lengths{$final_size} = 1;
+            } else {
+                $linear1_final_lengths{$final_size}++;
+            }
+            $comment .= "type: ${type} ";
+        }
+        ## for 5 I am looking at a set with three and a fragment this can be:
+        ## stepsynth_rev<variable_rev<helical_rev<helical_fwd<variable_fwd
+        ## variable_rev<helical_rev<helical_fwd<variable_fwd<stepsynth_fwd
+        ## the "size" for the helical+variable where there is no stepsynth will not include the spacer and will make these molecules range from "0-40" in size
+        if ($observed_indices == 5 && $observe{stepsynth_fwd} > 0 && $observe{helical_fwd} > 0 &&
+                $observe{variable_fwd} > 0 && $observe{helical_rev} > 0 && $observe{variable_rev} > 0) {
+            my @pieces = split(/\s+/, $comment);
+            for my $p (@pieces) {
+                my ($positions, $piece, $name, $dir) = split(/:/, $p);
+                if ($piece eq 'helical' && $dir eq 'fwd') {
+                    $helicalfwd = $name;
+                } elsif ($piece eq 'helical' && $dir eq 'rev') {
+                    $helicalrev = $name;
+                } elsif ($piece eq 'variable' && $dir eq 'fwd') {
+                    $variablefwd = $name;
+                } elsif ($piece eq 'variable' && $dir eq 'rev') {
+                    $variablerev = $name;
+                } elsif ($piece eq 'stepsynth' && $dir eq 'fwd') {
+                    $stepsynthfwd = $name;
+                }
+            }
+            my $final_bi5_fwd_size = $options{spacer} + $stepsynthfwd + $variablefwd + $helicalfwd;
+            my $final_bi5_rev_size = $variablerev + $helicalrev;
+            if ($positions{variable_rev} < $positions{helical_rev} &&
+                    $positions{helical_rev} < $positions{helical_fwd} &&
+                    $positions{helical_fwd} < $positions{variable_fwd} &&
+                    $positions{variable_fwd} < $positions{stepsynth_fwd} ) {
+                $found_five_bi++;
+                $type = "bimolecular-5";
+                $comment .= "$count final sizes: fwd: $final_bi5_fwd_size rev: $final_bi5_rev_size ";
+                if (!defined($bicyclized5_final_lengths{final_bi5_fwd_size})) {
+                    $bicyclized5_final_lengths{$final_bi5_fwd_size} = 1;
+                } else {
+                    $bicyclized5_final_lengths{final_bi5_fwd_size}++;
+                }
+                if (!defined($bicyclized5_final_lengths{final_bi5_rev_size})) {
+                    $bicyclized5_final_lengths{$final_bi5_rev_size} = 1;
+                } else {
+                    $bicyclized5_final_lengths{final_bi5_rev_size}++;
+                }
+                if (!defined($bicyclized5_full_final_lengths{$numbers{stepsynth_fwd}$numbers{variable_fwd}$numbers{helical_fwd}})) {
+                    $bicyclized5_full_final_lengths{$numbers{stepsynth_fwd}$numbers{variable_fwd}$numbers{helical_fwd}} = 1;
+                } else {
+                    $bicyclized5_full_final_lengths{$numbers{stepsynth_fwd}$numbers{variable_fwd}$numbers{helical_fwd}}++;
+                }
+                if (!defined($bicyclized5_frag_final_lengths{$numbers{variable_rev}$numbers{helical_rev}})) {
+                    $bicyclized5_frag_final_lengths{$numbers{variable_rev}$numbers{helical_rev}} = 1;
+                } else {
+                    $bicyclized5_frag_final_lengths{$numbers{variable_rev}$numbers{helical_rev}}++;
+                }
+            } else {
+                $type = "unknown5hit";
+                $found_five_unknown++;
+            }
+            $comment .= "cyclized type: ${type} ";
+        }
+        if ($observed_indices == 5 && $observe{stepsynth_rev} > 0 && $observe{helical_fwd} > 0 &&
+                $observe{variable_fwd} > 0 && $observe{helical_rev} > 0 && $observe{variable_rev} > 0) {
+            my @pieces = split(/\s+/, $comment);
+            for my $p (@pieces) {
+                my ($positions, $piece, $name, $dir) = split(/:/, $p);
+                if ($piece eq 'helical' && $dir eq 'fwd') {
+                    $helicalfwd = $name;
+                } elsif ($piece eq 'helical' && $dir eq 'rev') {
+                    $helicalrev = $name;
+                } elsif ($piece eq 'variable' && $dir eq 'fwd') {
+                    $variablefwd = $name;
+                } elsif ($piece eq 'variable' && $dir eq 'rev') {
+                    $variablerev = $name;
+                } elsif ($piece eq 'stepsynth' && $dir eq 'rev') {
+                    $stepsynthrev = $name;
+                }
+            }
+            my $final_bi5_fwd_size = $variablefwd + $helicalfwd;
+            my $final_bi5_rev_size = $options{spacer} + $variablerev + $helicalrev + $stepsynthrev;
+            if ($positions{stepsynth_rev} < $positions{variable_rev} &&
+                    $positions{variable_rev} < $positions{helical_rev} &&
+                    $positions{helical_rev} < $positions{helical_fwd} &&
+                    $positions{helical_fwd} < $positions{variable_fwd}) {
+                $found_five_bi++;
+                $type = "bimolecular-5";
+                $comment .= "$count final sizes: fwd: $final_bi5_fwd_size rev: $final_bi5_rev_size ";
+                if (!defined($bicyclized5_final_lengths{final_bi5_fwd_size})) {
+                    $bicyclized5_final_lengths{$final_bi5_fwd_size} = 1;
+                } else {
+                    $bicyclized5_final_lengths{final_bi5_fwd_size}++;
+                }
+                if (!defined($bicyclized5_final_lengths{final_bi5_rev_size})) {
+                    $bicyclized5_final_lengths{$final_bi5_rev_size} = 1;
+                } else {
+                    $bicyclized5_final_lengths{final_bi5_rev_size}++;
+                }
+                if (!defined($bicyclized5_full_final_lengths{$numbers{stepsynth_rev}$numbers{variable_rev}$numbers{helical_rev}})) {
+                    $bicyclized5_full_final_lengths{$numbers{stepsynth_rev}$numbers{variable_rev}$numbers{helical_rev}} = 1;
+                } else {
+                    $bicyclized5_full_final_lengths{$numbers{stepsynth_rev}$numbers{variable_rev}$numbers{helical_rev}}++;
+                }
+                if (!defined($bicyclized5_frag_final_lengths{$numbers{variable_fwd}$numbers{helical_fwd}})) {
+                    $bicyclized5_frag_final_lengths{$numbers{variable_fwd}$numbers{helical_fwd}} = 1;
+                } else {
+                    $bicyclized5_frag_final_lengths{$numbers{variable_fwd}$numbers{helical_fwd}}++;
+                }
+            } else {
+                $type = "unknown5hit";
+                $found_five_unknown++;
+            }
+            $comment .= "cyclized type: ${type} ";
+        }
+        ##
         if ($observed_indices == 6 && $observe{stepsynth_fwd} > 0 && $observe{helical_fwd} > 0 &&
                 $observe{variable_fwd} > 0 && $observe{stepsynth_rev} > 0 && $observe{helical_rev} > 0 &&
                 $observe{variable_rev} > 0) {
@@ -576,13 +856,13 @@ sub Sort_File_Approx {
             }
             my $final_bi6_fwd_size = $options{spacer} + $stepsynthfwd + $variablefwd + $helicalfwd;
             my $final_bi6_rev_size = $options{spacer} + $stepsynthrev + $variablerev + $helicalrev;
-            if ($positions{stepsynth_fwd} < $positions{variable_fwd} &&
-                    $positions{variable_fwd} < $positions{helical_fwd} &&
-                    $positions{helical_fwd} < $positions{helical_rev} &&
-                    $positions{helical_rev} < $positions{variable_rev} &&
-                    $positions{variable_rev} < $positions{stepsynth_rev} ) {
+            if ($positions{stepsynth_fwd} > $positions{variable_fwd} &&
+                    $positions{variable_fwd} > $positions{helical_fwd} &&
+                    $positions{helical_fwd} > $positions{helical_rev} &&
+                    $positions{helical_rev} > $positions{variable_rev} &&
+                    $positions{variable_rev} > $positions{stepsynth_rev} ) {
                 $found_six_bi++;
-                $cyclized = "bimolecular-6";
+                $type = "bimolecular-6";
                 $comment .= "$count final sizes: fwd: $final_bi6_fwd_size rev: $final_bi6_rev_size ";
                 if (!defined($bicyclized6_final_lengths{$final_bi6_fwd_size})) {
                     $bicyclized6_final_lengths{$final_bi6_fwd_size} = 1;
@@ -594,11 +874,21 @@ sub Sort_File_Approx {
                 } else {
                     $bicyclized6_final_lengths{$final_bi6_rev_size}++;
                 }
+                if (!defined($bicyclized6_full_final_lengths{$numbers{stepsynth_rev}$numbers{variable_rev}$numbers{helical_rev}})) {
+                    $bicyclized6_full_final_lengths{$numbers{stepsynth_rev}$numbers{variable_rev}$numbers{helical_rev}} = 1;
+                } else {
+                    $bicyclized6_full_final_lengths{$numbers{stepsynth_rev}$numbers{variable_rev}$numbers{helical_rev}}++;
+                }
+                if (!defined($bicyclized6_full_final_lengths{$numbers{stepsynth_fwd}$numbers{variable_fwd}$numbers{helical_fwd}})) {
+                    $bicyclized6_full_final_lengths{$numbers{stepsynth_fwd}$numbers{variable_fwd}$numbers{helical_fwd}} = 1;
+                } else {
+                    $bicyclized6_full_final_lengths{$numbers{stepsynth_fwd}$numbers{variable_fwd}$numbers{helical_fwd}}++;
+                }
             } else {
-                $cyclized = "unknown";
+                $type = "unknown6hit";
                 $found_six_unknown++;
             }
-            $comment .= "cyclized type: ${cyclized} ";
+            $comment .= "cyclized type: ${type} ";
         }
         ## Scan for bimolecular products from B-B ligations
         if ($observed_indices == 2 && $observe{stepcyc_fwd} > 0 && $observe{stepcyc_rev} > 0) {
@@ -612,24 +902,29 @@ sub Sort_File_Approx {
                 }
             }
             ## counting here just looks at the total size, as they can be separated using this in itself
+            ## except we can't - 47+107 and 77+77 are equivilent. to separate this out, sizes need to be reported as what they are made of as well
             my $final_bi2_size = $stepcycfwd + $stepcycrev;
             if ($positions{stepcyc_fwd} < $positions{stepcyc_rev}) {
                 $found_two_bi++;
-                $cyclized = "bimolecular-2";
+                $type = "bimolecular-2";
                 $comment .= "$count final size: $final_bi2_size ";
                 if (!defined($bicyclized2_final_lengths{$final_bi2_size})) {
                     $bicyclized2_final_lengths{$final_bi2_size} = 1;
                 } else {
                     $bicyclized2_final_lengths{$final_bi2_size}++;
                 }
+                if (!defined($bicyclized2_full_final_lengths{$numbers{stepcyc_fwd}$numbers{stepcyc_rev}})) {
+                    $bicyclized2_full_final_lengths{$numbers{stepcyc_fwd}$numbers{stepcyc_rev}} = 1;
+                } else {
+                    $bicyclized2_full_final_lengths{$numbers{stepcyc_fwd}$numbers{stepcyc_rev}}++;
+                }
             } else {
-                $cyclized = "unknown";
+                $type = "unknown2hit";
             }
-            $comment .= "cyclized type: ${cyclized} ";
+            $comment .= "cyclized type: ${type} ";
         } else {
             $comment .= "$count ";
         }
-
         ## append to the comment the number of observed indices.
         $comment .= " hits: ${observed_indices} ";
         ## Increment the singles->tens (& 11+) with the relevant observations.
@@ -754,7 +1049,12 @@ sub Read_indices {
         $indices->{$index_sequence} = {
             name => $name,
             direction => $direction,
-            number => int($number),
+            # I am formating each number to include three digits this is because my greatest size is three digits and I want everything to include all three (even if all zeros).
+            # I think I can get away with not using this given how I have the numbering laid out. It is already formatted as I want.
+            # number => sprintf("%03d",$number),
+            number => $number,
+            # original number input converted number to integer
+            # number => int($number),
             total_observed => 0,
             ambiguous_observed => 0,
             unique_observed => 0
@@ -784,7 +1084,7 @@ sub End_Handler {
             print $log "     The read type: ${k} was observed: $observations{$k} times.\n";
         }
     }
-    ## how many times single, double...seven index sequences were found & how many times individual index classes were found within them.
+    ## how many times single, double...eleven+ index sequences were found & how many times individual index classes were found within them.
     if ($singles{sum} > 0) {
         print $log "$singles{sum} single-index reads were observed, including:\n";
         foreach my $k (sort keys %singles) {
@@ -877,45 +1177,98 @@ sub End_Handler {
     print $log "${found_all_four} reads had a stepsynth+variable+helical+stepcyc:\n";
     print $log "${found_four_uni} reads had a stepsynth+variable+helical+stepcyc and cyclized:\n";
     foreach my $k (sort keys %unicyclized4_final_lengths) {
-        print $log "Size $k was found $unicyclized4_final_lengths{$k} times and cyclized.\n";
+        print $log "    Size $k was found $unicyclized4_final_lengths{$k} times and cyclized.\n";
         if ($k ne "$options{spacer}") {
             print $unicyc_csv "$k,$unicyclized4_final_lengths{$k}\n";
         }
     }
+    foreach my $k (sort keys %unicyclized4_full_final_lengths) {
+        print $unicycfull_csv "$k,$unicyclized4_full_final_lengths{$k}\n";
+    }
     print $log "${found_four_lin} reads had a stepcyc+stepsynth+variable+helical and not cyclized:\n";
     foreach my $k (sort keys %linear4_final_lengths) {
-        print $log "Size $k was found $linear4_final_lengths{$k} times and not cyclized.\n";
+        print $log "    Size $k was found $linear4_final_lengths{$k} times and not cyclized.\n";
         if ($k ne "$options{spacer}") {
             print $fourhitlin_csv "$k,$linear4_final_lengths{$k}\n";
         }
     }
+    foreach my $k (sort keys %linear4_full_final_lengths) {
+        print $fourhitlinfull_csv "$k,$linear4_full_final_lengths{$k}\n";
+    }
     print $log "${found_four_bi} reads had a biomolecular stepsynth+variable+helical+stepcyc:\n";
     foreach my $k (sort keys %bicyclized4_final_lengths) {
-        print $log "Size $k was found $bicyclized4_final_lengths{$k} times and cyclized (bimolecular).\n";
+        print $log "    Size $k was found $bicyclized4_final_lengths{$k} times and cyclized (bimolecular).\n";
         if ($k ne "$options{spacer}") {
             print $bicyc4_csv "$k,$bicyclized4_final_lengths{$k}\n";
         }
     }
+    foreach my $k (sort keys %bicyclized4_full_final_lengths) {
+        print $bicyc4full_csv "$k,$bicyclized4_full_final_lengths{$k}\n";
+    }
     print $log "${found_four_unknown} reads had four hits and were unknown\n";
+    print $log "${found_three_lin} reads had three hits and were linear fragments stepsynth+variable+helical:\n";
+    foreach my $k (sort keys %linear3_final_lengths) {
+        print $log "    Size $k was found $linear3_final_lengths{$k} times.\n";
+        if ($k ne "$options{spacer}") {
+            print $threehitlin_csv "$k,$linear3_final_lengths{$k}\n";
+        }
+    }
+    foreach my $k (sort keys %linear3_full_final_lengths) {
+        print $threehitlinfull_csv "$k,$linear3_full_final_lengths{$k}\n";
+    }
+    print $log "${found_one_lin} reads had a single hit and were linear fragments:\n";
+    foreach my $k (sort keys %linear1_final_lengths) {
+        print $log "    Size $k was found $linear1_final_lengths{$k} times.\n";
+        print $onehitlin_csv "$k,$linear1_final_lengths{$k}\n";
+    }
+    print $log "${found_five_bi} reads had five hits and were bimolecular\n";
+    foreach my $k (sort keys %bicyclized5_final_lengths) {
+        print $log "    Size $k was found $bicyclized5_final_lengths{$k} times and cyclized.\n";
+        if ($k ne "$options{spacer}") {
+            print $bicyc5_csv "$k,$bicyclized5_final_lengths{$k}\n";
+        }
+    }
+    foreach my $k (sort keys %bicyclized5_full_final_lengths) {
+        print $bicyc5full_csv "$k,$bicyclized5_full_final_lengths{$k}\n";
+    }
+    foreach my $k (sort keys %bicyclized5_frag_final_lengths) {
+        print $bicyc5frag_csv "$k,$bicyclized5_frag_final_lengths{$k}\n";
+    }
     print $log "${found_six_bi} reads had six hits and were bimolecular\n";
     foreach my $k (sort keys %bicyclized6_final_lengths) {
-        print $log "Size $k was found $bicyclized6_final_lengths{$k} times and cyclized.\n";
+        print $log "    Size $k was found $bicyclized6_final_lengths{$k} times and cyclized.\n";
         if ($k ne "$options{spacer}") {
             print $bicyc6_csv "$k,$bicyclized6_final_lengths{$k}\n";
         }
     }
+    foreach my $k (sort keys %bicyclized6_full_final_lengths) {
+        print $bicyc6full_csv "$k,bicyclized6_full_final_lengths{$k}\n";
+    }
     print $log "${found_six_unknown} reads had six hits and were unknown\n";
     print $log "${found_two_bi} reads had two hits and were bimolecular:\n";
     foreach my $k (sort keys %bicyclized2_final_lengths) {
-        print $log "Size $k was found $bicyclized2_final_lengths{$k} times and cyclized (bimolecular).\n";
+        print $log "    Size $k was found $bicyclized2_final_lengths{$k} times and cyclized (bimolecular).\n";
         print $bicyc2_csv "$k,$bicyclized2_final_lengths{$k}\n";
+    }
+    foreach my $k (sort keys %bicyclized2_full_final_lengths) {
+        print $bicyc2full_csv "$k,$bicyclized2_full_final_lengths{$k}\n";
     }
     $log->close();
     $unicyc_csv->close();
+    $unicycfull_csv->close();
     $fourhitlin_csv->close();
+    $fourhitlinfull_csv->close();
+    $threehitlin_csv->close();
+    $threehitlinfull_csv->close();
+    $onehitlin_csv->close();
     $bicyc4_csv->close();
+    $bicyc4full_csv->close();
     $bicyc6_csv->close();
+    $bicyc6full_csv->close();
+    $bicyc5_csv->close();
+    $bicyc5full_csv->close();
     $bicyc2_csv->close();
+    $bicyc2full_csv->close();
     $out->close();
     exit(0);
 }
