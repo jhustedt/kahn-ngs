@@ -143,6 +143,7 @@ my %options = (
     bicyc6full_csv => 'bimolecular6_ligated_lengths.csv',
     bicyc5_csv => 'bimolecular5_ligated_lengths.csv',
     bicyc5full_csv => 'bimolecular5_ligated_lengths_full.csv',
+    bicyc5frag_csv => 'bimolecular5_ligated_lengths_frag.csv',
     bicyc2_csv => 'bimolecular2_ligated_lengths.csv',
     bicyc2full_csv => 'bimolecular2_ligated_lengths_full.csv',
     spacer => 72,
@@ -218,6 +219,7 @@ my $found_five_bi = 0;
 my $found_five_unknown = 0;
 my %bicyclized5_final_lengths = ();
 my %bicyclized5_full_final_lengths = ();
+my %bicyclized5_frag_final_lengths = ();
 my $found_two_bi = 0;
 my $found_two_unknown = 0;
 my %bicyclized2_final_lengths = ();
@@ -242,6 +244,7 @@ my $opt_result = GetOptions(
     "bicyc6full_csv:s" => \$options{bicyc6full_csv},
     "bicyc5_csv:s" => \$options{bicyc5_csv},
     "bicyc5full_csv:s" => \$options{bicyc5full_csv},
+    "bicyc5frag_csv:s" => \$options{bicyc5frag_csv},
     "bicyc2_csv:s" => \$options{bicyc2_csv},
     "bicyc2full_csv:s" => \$options{bicyc2full_csv},
     "outfastq:s" => \$options{outfastq},
@@ -262,6 +265,7 @@ my $bicyc2_csv = new FileHandle(">$options{outdir}/$options{bicyc2_csv}");
 my $bicyc2full_csv = new FileHandle(">$options{outdir}/$options{bicyc2full_csv}");
 my $bicyc5_csv = new FileHandle(">$options{outdir}/$options{bicyc5_csv}");
 my $bicyc5full_csv = new FileHandle(">$options{outdir}/$options{bicyc5full_csv}");
+my $bicyc5frag_csv = new FileHandle(">$options{outdir}/$options{bicyc5frag_csv}");
 my $threehitlin_csv = new FileHandle(">$options{outdir}/$options{threehitlin_csv}");
 my $threehitlinfull_csv = new FileHandle(">$options{outdir}/$options{threehitlinfull_csv}");
 my $onehitlin_csv = new FileHandle(">$options{outdir}/$options{onehitlin_csv}");
@@ -1267,6 +1271,7 @@ sub End_Handler {
     $bicyc6full_csv->close();
     $bicyc5_csv->close();
     $bicyc5full_csv->close();
+    $bicyc5frag_csv->close();
     $bicyc2_csv->close();
     $bicyc2full_csv->close();
     $out->close();
