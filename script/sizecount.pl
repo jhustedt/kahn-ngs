@@ -495,10 +495,10 @@ sub Sort_File_Approx {
                 } else {
                     $unicyclized4_final_lengths{$final_size}++;
                 }
-                if (!defined($unicyclized4_full_final_lengths{$numbers{stepsynth_fwd}$numbers{variable_fwd}$numbers{helical_fwd}})) {
-                    $unicyclized4_full_final_lengths{$numbers{stepsynth_fwd}$numbers{variable_fwd}$numbers{helical_fwd}} = 1;
+                if (!defined($unicyclized4_full_final_lengths{$numbers{stepsynth_fwd},$numbers{variable_fwd},$numbers{helical_fwd}})) {
+                    $unicyclized4_full_final_lengths{$numbers{stepsynth_fwd},$numbers{variable_fwd},$numbers{helical_fwd}} = 1;
                 } else {
-                    $unicyclized4_full_final_lengths{$numbers{stepsynth_fwd}$numbers{variable_fwd}$numbers{helical_fwd}}++;
+                    $unicyclized4_full_final_lengths{$numbers{stepsynth_fwd},$numbers{variable_fwd},$numbers{helical_fwd}}++;
                 }
                 ## if stepsynth & stepcyc do not match, but the order is still the same, this is a bimolecular A to B cyclization
             } elsif ($positions{stepcyc_fwd} < $positions{helical_fwd} &&
@@ -512,10 +512,10 @@ sub Sort_File_Approx {
                 } else {
                     $bicyclized4_final_lengths{$final_size}++;
                 }
-                if (!defined($bicyclized4_full_final_lengths{$numbers{stepsynth_fwd}$numbers{variable_fwd}$numbers{helical_fwd}})) {
-                    $bicyclized4_full_final_lengths{$numbers{stepsynth_fwd}$numbers{variable_fwd}$numbers{helical_fwd}} = 1;
+                if (!defined($bicyclized4_full_final_lengths{$numbers{stepsynth_fwd},$numbers{variable_fwd},$numbers{helical_fwd}})) {
+                    $bicyclized4_full_final_lengths{$numbers{stepsynth_fwd},$numbers{variable_fwd},$numbers{helical_fwd}} = 1;
                 } else {
-                    $bicyclized4_full_final_lengths{$numbers{stepsynth_fwd}$numbers{variable_fwd}$numbers{helical_fwd}}++;
+                    $bicyclized4_full_final_lengths{$numbers{stepsynth_fwd},$numbers{variable_fwd},$numbers{helical_fwd}}++;
                 }
                 ## if order is that of initial library we count up linear molecules
             } elsif ($positions{helical_fwd} < $positions{variable_fwd} &&
@@ -528,10 +528,10 @@ sub Sort_File_Approx {
                 } else {
                     $linear4_final_lengths{$final_size}++;
                 }
-                if (!defined($linear4_full_final_lengths{$numbers{stepsynth_fwd}$numbers{variable_fwd}$numbers{helical_fwd}})) {
-                    $linear4_full_final_lengths{$numbers{stepsynth_fwd}$numbers{variable_fwd}$numbers{helical_fwd}} = 1;
+                if (!defined($linear4_full_final_lengths{$numbers{stepsynth_fwd},$numbers{variable_fwd},$numbers{helical_fwd}})) {
+                    $linear4_full_final_lengths{$numbers{stepsynth_fwd},$numbers{variable_fwd},$numbers{helical_fwd}} = 1;
                 } else {
-                    $linear4_full_final_lengths{$numbers{stepsynth_fwd}$numbers{variable_fwd}$numbers{helical_fwd}}++;
+                    $linear4_full_final_lengths{$numbers{stepsynth_fwd},$numbers{variable_fwd},$numbers{helical_fwd}}++;
                 }
             } else {
                 $type = "unknown4hit";
@@ -572,10 +572,10 @@ sub Sort_File_Approx {
                 } else {
                     $unicyclized4_final_lengths{$final_size}++;
                 }
-                if (!defined($unicyclized4_full_final_lengths{$numbers{stepsynth_rev}$numbers{variable_rev}$numbers{helical_rev}})) {
-                    $unicyclized4_full_final_lengths{$numbers{stepsynth_rev}$numbers{variable_rev}$numbers{helical_rev}} = 1;
+                if (!defined($unicyclized4_full_final_lengths{$numbers{stepsynth_rev},$numbers{variable_rev},$numbers{helical_rev}})) {
+                    $unicyclized4_full_final_lengths{$numbers{stepsynth_rev},$numbers{variable_rev},$numbers{helical_rev}} = 1;
                 } else {
-                    $unicyclized4_full_final_lengths{$numbers{stepsynth_rev}$numbers{variable_rev}$numbers{helical_rev}}++;
+                    $unicyclized4_full_final_lengths{$numbers{stepsynth_rev},$numbers{variable_rev},$numbers{helical_rev}}++;
                 }
                 ## if stepsynth & stepcyc do not match, but the order is still the same, this is a bimolecular A-B ligation
             } elsif ($positions{stepcyc_rev} > $positions{helical_rev} &&
@@ -589,10 +589,10 @@ sub Sort_File_Approx {
                 } else {
                     $bicyclized4_final_lengths{$final_size}++;
                 }
-                if (!defined($bicyclized4_full_final_lengths{$numbers{stepsynth_rev}$numbers{variable_rev}$numbers{helical_rev}})) {
-                    $bicyclized4_full_final_lengths{$numbers{stepsynth_rev}$numbers{variable_rev}$numbers{helical_rev}} = 1;
+                if (!defined($bicyclized4_full_final_lengths{$numbers{stepsynth_rev},$numbers{variable_rev},$numbers{helical_rev}})) {
+                    $bicyclized4_full_final_lengths{$numbers{stepsynth_rev},$numbers{variable_rev},$numbers{helical_rev}} = 1;
                 } else {
-                    $bicyclized4_full_final_lengths{$numbers{stepsynth_rev}$numbers{variable_rev}$numbers{helical_rev}}++;
+                    $bicyclized4_full_final_lengths{$numbers{stepsynth_rev},$numbers{variable_rev},$numbers{helical_rev}}++;
                 }
             ## if order is that of initial library we count up linear molecules
             } elsif ($positions{helical_rev} > $positions{variable_rev} &&
@@ -605,10 +605,10 @@ sub Sort_File_Approx {
                 } else {
                     $linear4_final_lengths{$final_size}++;
                 }
-                if (!defined($linear4_full_final_lengths{$numbers{stepsynth_rev}$numbers{variable_rev}$numbers{helical_rev}})) {
-                    $linear4_full_final_lengths{$numbers{stepsynth_rev}$numbers{variable_rev}$numbers{helical_rev}} = 1;
+                if (!defined($linear4_full_final_lengths{$numbers{stepsynth_rev},$numbers{variable_rev},$numbers{helical_rev}})) {
+                    $linear4_full_final_lengths{$numbers{stepsynth_rev},$numbers{variable_rev},$numbers{helical_rev}} = 1;
                 } else {
-                    $linear4_full_final_lengths{$numbers{stepsynth_rev}$numbers{variable_rev}$numbers{helical_rev}}++;
+                    $linear4_full_final_lengths{$numbers{stepsynth_rev},$numbers{variable_rev},$numbers{helical_rev}}++;
                 }
             } else {
                 $type = "unknown4hit";
@@ -641,10 +641,10 @@ sub Sort_File_Approx {
                 } else {
                     $linear3_final_lengths{$final_size}++;
                 }
-                if (!defined($linear3_full_final_lengths{$numbers{stepsynth_fwd}$numbers{variable_fwd}$numbers{helical_fwd}})) {
-                    $linear3_full_final_lengths{$numbers{stepsynth_fwd}$numbers{variable_fwd}$numbers{helical_fwd}} = 1;
+                if (!defined($linear3_full_final_lengths{$numbers{stepsynth_fwd},$numbers{variable_fwd},$numbers{helical_fwd}})) {
+                    $linear3_full_final_lengths{$numbers{stepsynth_fwd},$numbers{variable_fwd},$numbers{helical_fwd}} = 1;
                 } else {
-                    $linear3_full_final_lengths{$numbers{stepsynth_fwd}$numbers{variable_fwd}$numbers{helical_fwd}}++;
+                    $linear3_full_final_lengths{$numbers{stepsynth_fwd},$numbers{variable_fwd},$numbers{helical_fwd}}++;
                 }
             } else {
                 $type = "unknown3hit";
@@ -675,10 +675,10 @@ sub Sort_File_Approx {
                 } else {
                     $linear3_final_lengths{$final_size}++;
                 }
-                if (!defined($linear3_full_final_lengths{$numbers{stepsynth_rev}$numbers{variable_rev}$numbers{helical_rev}})) {
-                    $linear3_full_final_lengths{$numbers{stepsynth_rev}$numbers{variable_rev}$numbers{helical_rev}} = 1:
+                if (!defined($linear3_full_final_lengths{$numbers{stepsynth_rev},$numbers{variable_rev},$numbers{helical_rev}})) {
+                    $linear3_full_final_lengths{$numbers{stepsynth_rev},$numbers{variable_rev},$numbers{helical_rev}} = 1:
                 } else {
-                    $linear3_full_final_lengths{$numbers{stepsynth_rev}$numbers{variable_rev}$numbers{helical_rev}}++;
+                    $linear3_full_final_lengths{$numbers{stepsynth_rev},$numbers{variable_rev},$numbers{helical_rev}}++;
                 }
             } else {
                 $type = "unknown3hit";
@@ -765,15 +765,15 @@ sub Sort_File_Approx {
                 } else {
                     $bicyclized5_final_lengths{final_bi5_rev_size}++;
                 }
-                if (!defined($bicyclized5_full_final_lengths{$numbers{stepsynth_fwd}$numbers{variable_fwd}$numbers{helical_fwd}})) {
-                    $bicyclized5_full_final_lengths{$numbers{stepsynth_fwd}$numbers{variable_fwd}$numbers{helical_fwd}} = 1;
+                if (!defined($bicyclized5_full_final_lengths{$numbers{stepsynth_fwd},$numbers{variable_fwd},$numbers{helical_fwd}})) {
+                    $bicyclized5_full_final_lengths{$numbers{stepsynth_fwd},$numbers{variable_fwd},$numbers{helical_fwd}} = 1;
                 } else {
-                    $bicyclized5_full_final_lengths{$numbers{stepsynth_fwd}$numbers{variable_fwd}$numbers{helical_fwd}}++;
+                    $bicyclized5_full_final_lengths{$numbers{stepsynth_fwd},$numbers{variable_fwd},$numbers{helical_fwd}}++;
                 }
-                if (!defined($bicyclized5_frag_final_lengths{$numbers{variable_rev}$numbers{helical_rev}})) {
-                    $bicyclized5_frag_final_lengths{$numbers{variable_rev}$numbers{helical_rev}} = 1;
+                if (!defined($bicyclized5_frag_final_lengths{$numbers{variable_rev},$numbers{helical_rev}})) {
+                    $bicyclized5_frag_final_lengths{$numbers{variable_rev},$numbers{helical_rev}} = 1;
                 } else {
-                    $bicyclized5_frag_final_lengths{$numbers{variable_rev}$numbers{helical_rev}}++;
+                    $bicyclized5_frag_final_lengths{$numbers{variable_rev},$numbers{helical_rev}}++;
                 }
             } else {
                 $type = "unknown5hit";
@@ -817,15 +817,15 @@ sub Sort_File_Approx {
                 } else {
                     $bicyclized5_final_lengths{final_bi5_rev_size}++;
                 }
-                if (!defined($bicyclized5_full_final_lengths{$numbers{stepsynth_rev}$numbers{variable_rev}$numbers{helical_rev}})) {
-                    $bicyclized5_full_final_lengths{$numbers{stepsynth_rev}$numbers{variable_rev}$numbers{helical_rev}} = 1;
+                if (!defined($bicyclized5_full_final_lengths{$numbers{stepsynth_rev},$numbers{variable_rev},$numbers{helical_rev}})) {
+                    $bicyclized5_full_final_lengths{$numbers{stepsynth_rev},$numbers{variable_rev},$numbers{helical_rev}} = 1;
                 } else {
-                    $bicyclized5_full_final_lengths{$numbers{stepsynth_rev}$numbers{variable_rev}$numbers{helical_rev}}++;
+                    $bicyclized5_full_final_lengths{$numbers{stepsynth_rev},$numbers{variable_rev},$numbers{helical_rev}}++;
                 }
-                if (!defined($bicyclized5_frag_final_lengths{$numbers{variable_fwd}$numbers{helical_fwd}})) {
-                    $bicyclized5_frag_final_lengths{$numbers{variable_fwd}$numbers{helical_fwd}} = 1;
+                if (!defined($bicyclized5_frag_final_lengths{$numbers{variable_fwd},$numbers{helical_fwd}})) {
+                    $bicyclized5_frag_final_lengths{$numbers{variable_fwd},$numbers{helical_fwd}} = 1;
                 } else {
-                    $bicyclized5_frag_final_lengths{$numbers{variable_fwd}$numbers{helical_fwd}}++;
+                    $bicyclized5_frag_final_lengths{$numbers{variable_fwd},$numbers{helical_fwd}}++;
                 }
             } else {
                 $type = "unknown5hit";
@@ -874,15 +874,15 @@ sub Sort_File_Approx {
                 } else {
                     $bicyclized6_final_lengths{$final_bi6_rev_size}++;
                 }
-                if (!defined($bicyclized6_full_final_lengths{$numbers{stepsynth_rev}$numbers{variable_rev}$numbers{helical_rev}})) {
-                    $bicyclized6_full_final_lengths{$numbers{stepsynth_rev}$numbers{variable_rev}$numbers{helical_rev}} = 1;
+                if (!defined($bicyclized6_full_final_lengths{$numbers{stepsynth_rev},$numbers{variable_rev},$numbers{helical_rev}})) {
+                    $bicyclized6_full_final_lengths{$numbers{stepsynth_rev},$numbers{variable_rev},$numbers{helical_rev}} = 1;
                 } else {
-                    $bicyclized6_full_final_lengths{$numbers{stepsynth_rev}$numbers{variable_rev}$numbers{helical_rev}}++;
+                    $bicyclized6_full_final_lengths{$numbers{stepsynth_rev},$numbers{variable_rev},$numbers{helical_rev}}++;
                 }
-                if (!defined($bicyclized6_full_final_lengths{$numbers{stepsynth_fwd}$numbers{variable_fwd}$numbers{helical_fwd}})) {
-                    $bicyclized6_full_final_lengths{$numbers{stepsynth_fwd}$numbers{variable_fwd}$numbers{helical_fwd}} = 1;
+                if (!defined($bicyclized6_full_final_lengths{$numbers{stepsynth_fwd},$numbers{variable_fwd},$numbers{helical_fwd}})) {
+                    $bicyclized6_full_final_lengths{$numbers{stepsynth_fwd},$numbers{variable_fwd},$numbers{helical_fwd}} = 1;
                 } else {
-                    $bicyclized6_full_final_lengths{$numbers{stepsynth_fwd}$numbers{variable_fwd}$numbers{helical_fwd}}++;
+                    $bicyclized6_full_final_lengths{$numbers{stepsynth_fwd},$numbers{variable_fwd},$numbers{helical_fwd}}++;
                 }
             } else {
                 $type = "unknown6hit";
@@ -913,10 +913,10 @@ sub Sort_File_Approx {
                 } else {
                     $bicyclized2_final_lengths{$final_bi2_size}++;
                 }
-                if (!defined($bicyclized2_full_final_lengths{$numbers{stepcyc_fwd}$numbers{stepcyc_rev}})) {
-                    $bicyclized2_full_final_lengths{$numbers{stepcyc_fwd}$numbers{stepcyc_rev}} = 1;
+                if (!defined($bicyclized2_full_final_lengths{$numbers{stepcyc_fwd},$numbers{stepcyc_rev}})) {
+                    $bicyclized2_full_final_lengths{$numbers{stepcyc_fwd},$numbers{stepcyc_rev}} = 1;
                 } else {
-                    $bicyclized2_full_final_lengths{$numbers{stepcyc_fwd}$numbers{stepcyc_rev}}++;
+                    $bicyclized2_full_final_lengths{$numbers{stepcyc_fwd},$numbers{stepcyc_rev}}++;
                 }
             } else {
                 $type = "unknown2hit";
