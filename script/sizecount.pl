@@ -505,12 +505,14 @@ sub Sort_File_Approx {
                 } else {
                     $unicyclized4_full_final_lengths{$numbers{stepsynth_fwd}.$numbers{variable_fwd}.$numbers{helical_fwd}}++;
                 }
-                foreach my $n ($numbers{stepsynth_fwd} + $numbers{variable_fwd} + $numbers{helical_fwd} + $options{spacer}) {
+                my @short_size = @{$numbers{stepsynth_fwd} + $numbers{variable_fwd} + $numbers{helical_fwd} + $options{spacer}};
+                foreach my $n (@short_size) {
                     if (!defined($unicyclized4_final_lengths{$numbers{stepsynth_fwd} + $numbers{variable_fwd} + $numbers{helical_fwd} + $options{spacer}})) {
                         $unicyclized4_final_lengths{$numbers{stepsynth_fwd} + $numbers{variable_fwd} + $numbers{helical_fwd} + $options{spacer}} = 0;
                     }
                 }
-                foreach my $n ($numbers{stepsynth_fwd}.$numbers{variable_fwd}.$numbers{helical_fwd}) {
+                my @full_size = @{$numbers{stepsynth_fwd}.$numbers{variable_fwd}.$numbers{helical_fwd}};
+                foreach my $n (@full_size) {
                     if (!defined($unicyclized4_full_final_lengths{$numbers{stepsynth_fwd}.$numbers{variable_fwd}.$numbers{helical_fwd}})) {
                         $unicyclized4_full_final_lengths{$numbers{stepsynth_fwd}.$numbers{variable_fwd}.$numbers{helical_fwd}} = 0;
                     }
