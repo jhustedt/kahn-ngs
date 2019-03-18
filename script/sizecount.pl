@@ -505,12 +505,12 @@ sub Sort_File_Approx {
                 } else {
                     $unicyclized4_full_final_lengths{$numbers{stepsynth_fwd}.$numbers{variable_fwd}.$numbers{helical_fwd}}++;
                 }
-                foreach ($numbers{stepsynth_fwd} + $numbers{variable_fwd} + $numbers{helical_fwd} + $options{spacer}) {
+                foreach my $n ($numbers{stepsynth_fwd} + $numbers{variable_fwd} + $numbers{helical_fwd} + $options{spacer}) {
                     if (!defined($unicyclized4_final_lengths{$numbers{stepsynth_fwd} + $numbers{variable_fwd} + $numbers{helical_fwd} + $options{spacer}})) {
                         $unicyclized4_final_lengths{$numbers{stepsynth_fwd} + $numbers{variable_fwd} + $numbers{helical_fwd} + $options{spacer}} = 0;
                     }
                 }
-                foreach ($numbers{stepsynth_fwd}.$numbers{variable_fwd}.$numbers{helical_fwd}) {
+                foreach my $n ($numbers{stepsynth_fwd}.$numbers{variable_fwd}.$numbers{helical_fwd}) {
                     if (!defined($unicyclized4_full_final_lengths{$numbers{stepsynth_fwd}.$numbers{variable_fwd}.$numbers{helical_fwd}})) {
                         $unicyclized4_full_final_lengths{$numbers{stepsynth_fwd}.$numbers{variable_fwd}.$numbers{helical_fwd}} = 0;
                     }
