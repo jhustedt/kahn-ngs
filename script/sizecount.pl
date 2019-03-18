@@ -506,15 +506,15 @@ sub Sort_File_Approx {
                     $unicyclized4_full_final_lengths{$numbers{stepsynth_fwd}.$numbers{variable_fwd}.$numbers{helical_fwd}}++;
                 }
                 my @short_size = ($numbers{stepsynth_fwd} + $numbers{variable_fwd} + $numbers{helical_fwd} + $options{spacer});
-                foreach my $n (@short_size) {
-                    if (!defined($unicyclized4_final_lengths{$n})) {
-                        $unicyclized4_final_lengths{$n} = 0;
+                foreach my $shortsize (@short_size) {
+                    if (!defined($unicyclized4_final_lengths{$shortsize})) {
+                        $unicyclized4_final_lengths{$shortsize} = 0;
                     }
                 }
                 my @full_size = ($numbers{stepsynth_fwd}.$numbers{variable_fwd}.$numbers{helical_fwd});
-                foreach my $n (@full_size) {
-                    if (!defined($unicyclized4_full_final_lengths{$n}})) {
-                        $unicyclized4_full_final_lengths{$n} = 0;
+                foreach my $fullsize (@full_size) {
+                    if (!defined($unicyclized4_full_final_lengths{$fullsize})) {
+                        $unicyclized4_full_final_lengths{$fullsize} = 0;
                     }
                 }
                 ## if stepsynth & stepcyc do not match, but the order is still the same, this is a bimolecular A to B cyclization
