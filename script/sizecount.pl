@@ -505,6 +505,16 @@ sub Sort_File_Approx {
                 } else {
                     $unicyclized4_full_final_lengths{$numbers{stepsynth_fwd}.$numbers{variable_fwd}.$numbers{helical_fwd}}++;
                 }
+                foreach ($numbers{stepsynth_fwd} + $numbers{variable_fwd} + $numbers{helical_fwd} + $options{spacer}) {
+                    if (!defined($unicyclized4_final_lengths{$numbers{stepsynth_fwd} + $numbers{variable_fwd} + $numbers{helical_fwd} + $options{spacer}})) {
+                        $unicyclized4_final_lengths{$numbers{stepsynth_fwd} + $numbers{variable_fwd} + $numbers{helical_fwd} + $options{spacer}} = 0;
+                    }
+                }
+                foreach ($numbers{stepsynth_fwd}.$numbers{variable_fwd}.$numbers{helical_fwd}) {
+                    if (!defined($unicyclized4_full_final_lengths{$numbers{stepsynth_fwd}.$numbers{variable_fwd}.$numbers{helical_fwd}})) {
+                        $unicyclized4_full_final_lengths{$numbers{stepsynth_fwd}.$numbers{variable_fwd}.$numbers{helical_fwd}} = 0;
+                    }
+                }
                 ## if stepsynth & stepcyc do not match, but the order is still the same, this is a bimolecular A to B cyclization
             } elsif ($positions{stepcyc_fwd} < $positions{helical_fwd} &&
                          $positions{helical_fwd} < $positions{variable_fwd} &&
