@@ -947,7 +947,7 @@ sub Sort_File_Approx {
                 } else {
                     $bicyclized6_final_lengths{$final_bi6_fwd_size}++;
                 }
-                if (!defined(bicyclized6_final_lengths{$final_bi6_rev_size})) {
+                if (!defined($bicyclized6_final_lengths{$final_bi6_rev_size})) {
                     $bicyclized6_final_lengths{$final_bi6_rev_size} = 1;
                 } else {
                     $bicyclized6_final_lengths{$final_bi6_rev_size}++;
