@@ -495,9 +495,9 @@ sub Sort_File_Approx {
         }
         ## set hashes to zero for full name if no molecule was found of that name
         ## this is not currently working, full_size and frag_full are not making hashes that I want them to
-        my %step_sizes = (047,077,107);
-        my %var_sizes = (00..30);
-        my %hel_sizes = (00..10);
+        my $step_sizes = [047,077,107];
+        my $var_sizes = [00..30];
+        my $hel_sizes = [00..10];
         my $full_sizes = [\@{$step_sizes}.\@{$var_sizes}.\@{$hel_sizes}];
         for my $fullsize (@{$full_sizes}) {
             if (!defined($unicyclized4_full_final_lengths{$fullsize})) {
@@ -560,10 +560,10 @@ sub Sort_File_Approx {
                 } else {
                     $unicyclized4_final_lengths{$final_size}++;
                 }
-                if (!defined($unicyclized4_full_final_lengths{$numbers{stepsynth_fwd}.$numbers{variable_fwd}.$numbers{helical_fwd}})) {
+                if (!defined($unicyclized4_full_final_lengths{$numbers{stepsynth_fwd}.",".$numbers{variable_fwd}.",".$numbers{helical_fwd}})) {
                     $unicyclized4_full_final_lengths{$numbers{stepsynth_fwd}.$numbers{variable_fwd}.$numbers{helical_fwd}} = 1;
                 } else {
-                    $unicyclized4_full_final_lengths{$numbers{stepsynth_fwd}.$numbers{variable_fwd}.$numbers{helical_fwd}}++;
+                    $unicyclized4_full_final_lengths{$numbers{stepsynth_fwd}.",".$numbers{variable_fwd}.",".$numbers{helical_fwd}}++;
                 }
                 ## if stepsynth & stepcyc do not match, but the order is still the same, this is a bimolecular A to B cyclization
             } elsif ($positions{stepcyc_fwd} < $positions{helical_fwd} &&
