@@ -506,13 +506,13 @@ sub Sort_File_Approx {
                     $unicyclized4_full_final_lengths{$numbers{stepsynth_fwd}.$numbers{variable_fwd}.$numbers{helical_fwd}}++;
                 }
                 my $short_size = [$numbers{stepsynth_fwd} + $numbers{variable_fwd} + $numbers{helical_fwd} + $options{spacer}];
-                        foreach my $shortsize (@{$short_size}) {
+                        for my $shortsize (@{$short_size}) {
                     if (!defined($unicyclized4_final_lengths{$shortsize})) {
                         $unicyclized4_final_lengths{$shortsize} = 0;
                     }
                 }
                 my $full_size = [$numbers{stepsynth_fwd}.$numbers{variable_fwd}.$numbers{helical_fwd}];
-                        foreach my $fullsize (@{$full_size}) {
+                        for my $fullsize (@{$full_size}) {
                     if (!defined($unicyclized4_full_final_lengths{$fullsize})) {
                         $unicyclized4_full_final_lengths{$fullsize} = 0;
                     }
