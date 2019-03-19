@@ -465,16 +465,62 @@ sub Sort_File_Approx {
         my $stepsynthfwd = 0;
         my $stepsynthrev = 0;
         my $type = "yes";
-        ## set hashes to zero
+        ## set hashes to zero for final size range if no molecule was found of that size
         my $short_size = [119..219];
         for my $shortsize (@{$short_size}) {
             if (!defined($unicyclized4_final_lengths{$shortsize})) {
                 $unicyclized4_final_lengths{$shortsize} = 0;
             }
+            if (!defined($linear4_final_lengths{$shortsize})) {
+                $linear4_final_lengths{$shortsize} = 0;
+            }
+            if (!defined($linear3_final_lengths{$shortsize})) {
+                $linear3_final_lengths{$shortsize} = 0;
+            }
+            if (!defined($bicyclized4_final_lengths{$shortsize})) {
+                $bicyclized4_final_lengths{$shortsize} = 0;
+            }
+            if (!defined($bicyclized6_final_lengths{$shortsize})) {
+                $bicyclized6_final_lengths{$shortsize} = 0;
+            }
+            if (!defined($bicyclized5_final_lengths{$shortsize})) {
+                $bicyclized5_final_lengths{$shortsize} = 0;
+            }
         }
+        my $frag_size = [0..40];
+        for my $fragsize (@{$frag_size}) {
+            if (!defined($bicyclized5_final_lengths{$fragsize})) {
+                $bicyclized5_final_lengths{$fragsize} = 0;
+            }
+        }
+        ## set hashes to zero for full name if no molecule was found of that name
+        ## this is not currently working, full_size and frag_full are not making hashes that I want them to
         my $full_size = [($numbers{stepsynth_fwd}.$numbers{variable_fwd}.$numbers{helical_fwd})];
         for my $fullsize (@{$full_size}) {
+            if (!defined($unicyclized4_full_final_lengths{$fullsize})) {
                 $unicyclized4_full_final_lengths{$fullsize} = 0;
+            }
+            if (!defined($linear4_full_final_lengths{$fullsize})) {
+                $linear4_full_final_lengths{$fullsize} = 0;
+            }
+            if (!defined($linear3_full_final_lengths{$fullsize})) {
+                $linear3_full_final_lengths{$fullsize} = 0;
+            }
+            if (!defined($bicyclized4_full_final_lengths{$fullsize})) {
+                $bicyclized4_full_final_lengths{$fullsize} = 0;
+            }
+            if (!defined($bicyclized6_full_final_lengths{$fullsize})) {
+                $bicyclized6_full_final_lengths{$fullsize} = 0;
+            }
+            if (!defined($bicyclized5_full_final_lengths{$fullsize})) {
+                $bicyclized5_full_final_lengths{$fullsize} = 0;
+            }
+        }
+        my $frag_full = [($numbers{variable_fwd}.$numbers{helical_fwd})];
+        for my $fragfull (@{frag_full}) {
+            if (!defined($bicyclized5_frag_final_lengths{$fragfull})) {
+                $bicyclized5_frag_final_lengths{$fragfull} = 0;
+            }
         }
         ## Here we look only at files that have cyclized, count them, and place the count into its own csv
         ## first check that four indices are observed & they are the four we expect to see for a unimolecular cyclization
