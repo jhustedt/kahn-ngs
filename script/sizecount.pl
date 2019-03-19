@@ -468,11 +468,11 @@ sub Sort_File_Approx {
         ## set hashes to zero
         my $short_size = [($numbers{stepsynth_fwd} + $numbers{variable_fwd} + $numbers{helical_fwd} + $options{spacer})];
         for my $shortsize (@{$short_size}) {
-                $unicyclized4_final_lengths->{$shortsize} = 0;
+                $unicyclized4_final_lengths{$shortsize} = 0;
         }
         my $full_size = [($numbers{stepsynth_fwd}.$numbers{variable_fwd}.$numbers{helical_fwd})];
         for my $fullsize (@{$full_size}) {
-                $unicyclized4_full_final_lengths->{$fullsize} = 0;
+                $unicyclized4_full_final_lengths{$fullsize} = 0;
         }
         ## Here we look only at files that have cyclized, count them, and place the count into its own csv
         ## first check that four indices are observed & they are the four we expect to see for a unimolecular cyclization
