@@ -500,6 +500,9 @@ sub Sort_File_Approx {
         my $hel_sizes = [00..10];
         foreach (@{$hel_sizes}) {
             my $frag_full = $var_sizes.$hel_sizes;
+            if (!defined($bicyclized5_frag_final_lengths{$fragfull})) {
+                $bicyclized5_frag_final_lengths{$fragfull} = 0;
+            }
         }
         my $full_size = [($step_sizes.$var_sizes.$hel_sizes)];
         for my $fullsize (@{$full_size}) {
@@ -523,11 +526,11 @@ sub Sort_File_Approx {
             }
         }
       # my $frag_full = [($numbers{variable_fwd}.$numbers{helical_fwd})];
-        for my $fragfull (@{$frag_full}) {
-            if (!defined($bicyclized5_frag_final_lengths{$fragfull})) {
-                $bicyclized5_frag_final_lengths{$fragfull} = 0;
-            }
-        }
+      # for my $fragfull (@{$frag_full}) {
+      #     if (!defined($bicyclized5_frag_final_lengths{$fragfull})) {
+      #         $bicyclized5_frag_final_lengths{$fragfull} = 0;
+      #     }
+      # }
         ## Here we look only at files that have cyclized, count them, and place the count into its own csv
         ## first check that four indices are observed & they are the four we expect to see for a unimolecular cyclization
         if ($observed_indices == 4 && $observe{stepsynth_fwd} > 0 && $observe{helical_fwd} > 0 &&
