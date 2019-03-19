@@ -468,7 +468,9 @@ sub Sort_File_Approx {
         ## set hashes to zero
         my $short_size = [119..219];
         for my $shortsize (@{$short_size}) {
+            if (!defined($unicyclized4_final_lengths{$shortsize})) {
                 $unicyclized4_final_lengths{$shortsize} = 0;
+            }
         }
         my $full_size = [($numbers{stepsynth_fwd}.$numbers{variable_fwd}.$numbers{helical_fwd})];
         for my $fullsize (@{$full_size}) {
