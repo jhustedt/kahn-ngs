@@ -496,7 +496,7 @@ sub Sort_File_Approx {
         ## set hashes to zero for full name if no molecule was found of that name
         ## this is not currently working, full_size and frag_full are not making hashes that I want them to
         my $stepsizes = [047,077,107];
-        print $step_sizes;
+        print $stepsizes;
         my $varsizes = [00..30];
         my $helsizes = [00..10];
         my $fullsizes = [(@{$stepsizes}.@{$varsizes}.@{$helsizes})];
