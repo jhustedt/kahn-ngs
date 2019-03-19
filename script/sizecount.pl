@@ -495,7 +495,10 @@ sub Sort_File_Approx {
         }
         ## set hashes to zero for full name if no molecule was found of that name
         ## this is not currently working, full_size and frag_full are not making hashes that I want them to
-        my $full_size = [($numbers{stepsynth_fwd}.$numbers{variable_fwd}.$numbers{helical_fwd})];
+        my $step_sizes = [047,077,107];
+        my $var_sizes = [00..30];
+        my $hel_sizes = [00..10];
+        my $full_size = [($step_sizes.$var_sizes.$hel_sizes)];
         for my $fullsize (@{$full_size}) {
             if (!defined($unicyclized4_full_final_lengths{$fullsize})) {
                 $unicyclized4_full_final_lengths{$fullsize} = 0;
