@@ -376,8 +376,8 @@ sub Sort_File_Approx {
             ##set up array for starts
             my @starts = ();
             ##looks at parameters & if not defined, continue with direct match, if params exist, do aindex
-            if ( ! defined $options{insertion} && ! defined $options{deletion} &&
-                     ! defined $options{substitution} ) {
+            if ( !defined $options{insertion} && !defined $options{deletion} &&
+                    !defined $options{substitution} ) {
                 $sequence =~ m/$index/;
                 @starts = @-;
             } else {
@@ -487,7 +487,8 @@ sub Sort_File_Approx {
                 $bicyclized5_final_lengths{$shortsize} = 0;
             }
         }
-        my $frag_size = [00..40];
+        my $frag_size = ['00','01','02','03','04','05','06','07','08','09',10..40];
+        # print "@{$frag_size}\n";
         for my $fragsize (@{$frag_size}) {
             if (!defined($bicyclized5_final_lengths{$fragsize})) {
                 $bicyclized5_final_lengths{$fragsize} = 0;
@@ -495,11 +496,17 @@ sub Sort_File_Approx {
         }
         ## set hashes to zero for full name if no molecule was found of that name
         ## this is not currently working, full_sizes and frag_full are not making hashes that I want them to
-        my $step_sizes = [047,077,107];
-        print "${step_sizes}\n";
-        my $var_sizes = [00..30];
-        my $hel_sizes = [00..10];
-        my $full_sizes = [\@{$step_sizes}.\@{$var_sizes}.\@{$hel_sizes}];
+        my $step_sizes = ['047','077','107'];
+      # my $var_sizes = sprintf("$02d",00..30);
+        my $var_sizes = ['00','01','02','03','04','05','06','07','08','09',10..30];
+        my $hel_sizes = ['00','01','02','03','04','05','06','07','08','09','10'];
+        my %frag_full = ();
+        my %full_sizes = ();
+      # print "@{$hel_sizes}\n";
+      # print "@{$var_sizes}\n";
+      # print "@{$step_sizes}\n";
+        my $full_sizes = [@{$step_sizes}.@{$var_sizes}.@{$hel_sizes}];
+      # print "@{$full_sizes}\n";
         for my $fullsize (@{$full_sizes}) {
             if (!defined($unicyclized4_full_final_lengths{$fullsize})) {
                 $unicyclized4_full_final_lengths{$fullsize} = 0;
@@ -520,7 +527,7 @@ sub Sort_File_Approx {
                 $bicyclized5_full_final_lengths{$fullsize} = 0;
             }
         }
-        my $frag_full = [\@{$var_sizes},\@{$hel_sizes}];
+        my $frag_full = [@{$var_sizes}.@{$hel_sizes}];
         for my $fragfull (@{$frag_full}) {
             if (!defined($bicyclized5_frag_final_lengths{$fragfull})) {
                 $bicyclized5_frag_final_lengths{$fragfull} = 0;
@@ -821,15 +828,15 @@ sub Sort_File_Approx {
                 $found_five_bi++;
                 $type = "bimolecular-5";
                 $comment .= "$count final sizes: fwd: $final_bi5_fwd_size rev: $final_bi5_rev_size ";
-                if (!defined($bicyclized5_final_lengths{final_bi5_fwd_size})) {
+                if (!defined($bicyclized5_final_lengths{$final_bi5_fwd_size})) {
                     $bicyclized5_final_lengths{$final_bi5_fwd_size} = 1;
                 } else {
-                    $bicyclized5_final_lengths{final_bi5_fwd_size}++;
+                    $bicyclized5_final_lengths{$final_bi5_fwd_size}++;
                 }
-                if (!defined($bicyclized5_final_lengths{final_bi5_rev_size})) {
-                    $bicyclized5_final_lengths{$final_bi5_rev_size} = 1;
+                if (!defined($bicyclized5_final_lengths{'0'.$final_bi5_rev_size})) {
+                    $bicyclized5_final_lengths{'0'.$final_bi5_rev_size} = 1;
                 } else {
-                    $bicyclized5_final_lengths{final_bi5_rev_size}++;
+                    $bicyclized5_final_lengths{'0'.$final_bi5_rev_size}++;
                 }
                 if (!defined($bicyclized5_full_final_lengths{$numbers{stepsynth_fwd}.$numbers{variable_fwd}.$numbers{helical_fwd}})) {
                     $bicyclized5_full_final_lengths{$numbers{stepsynth_fwd}.$numbers{variable_fwd}.$numbers{helical_fwd}} = 1;
@@ -873,15 +880,15 @@ sub Sort_File_Approx {
                 $found_five_bi++;
                 $type = "bimolecular-5";
                 $comment .= "$count final sizes: fwd: $final_bi5_fwd_size rev: $final_bi5_rev_size ";
-                if (!defined($bicyclized5_final_lengths{final_bi5_fwd_size})) {
-                    $bicyclized5_final_lengths{$final_bi5_fwd_size} = 1;
+                if (!defined($bicyclized5_final_lengths{'0'.$final_bi5_fwd_size})) {
+                    $bicyclized5_final_lengths{'0'.$final_bi5_fwd_size} = 1;
                 } else {
-                    $bicyclized5_final_lengths{final_bi5_fwd_size}++;
+                    $bicyclized5_final_lengths{'0'.$final_bi5_fwd_size}++;
                 }
-                if (!defined($bicyclized5_final_lengths{final_bi5_rev_size})) {
+                if (!defined($bicyclized5_final_lengths{$final_bi5_rev_size})) {
                     $bicyclized5_final_lengths{$final_bi5_rev_size} = 1;
                 } else {
-                    $bicyclized5_final_lengths{final_bi5_rev_size}++;
+                    $bicyclized5_final_lengths{$final_bi5_rev_size}++;
                 }
                 if (!defined($bicyclized5_full_final_lengths{$numbers{stepsynth_rev}.$numbers{variable_rev}.$numbers{helical_rev}})) {
                     $bicyclized5_full_final_lengths{$numbers{stepsynth_rev}.$numbers{variable_rev}.$numbers{helical_rev}} = 1;
@@ -1138,8 +1145,8 @@ sub End_Handler {
     print $log "Index used: $options{indices}\n";
     print $log "Input file: $options{input}\n";
     print $log "Date and time run $datestring\n";
-    if ( ! defined $options{insertion} && ! defined $options{deletion} &&
-            ! defined $options{substitution} ) {
+    if ( !defined $options{insertion} && !defined $options{deletion} &&
+            !defined $options{substitution} ) {
         print $log "Direct match used";
     } else {
         print $log "String::Approx matching used: I$options{insertion},D$options{deletion},S$options{substitution}\n";
