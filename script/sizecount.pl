@@ -500,8 +500,8 @@ sub Sort_File_Approx {
         my $hel_sizes = [00..10];
         foreach (@{$hel_sizes}) {
             my $frag_full = $var_sizes.$hel_sizes;
-            if (!defined($bicyclized5_frag_final_lengths{$fragfull})) {
-                $bicyclized5_frag_final_lengths{$fragfull} = 0;
+            if (!defined($bicyclized5_frag_final_lengths{$frag_full})) {
+                $bicyclized5_frag_final_lengths{$frag_full} = 0;
             }
         }
         my $full_size = [($step_sizes.$var_sizes.$hel_sizes)];
