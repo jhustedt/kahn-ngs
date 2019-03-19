@@ -505,14 +505,14 @@ sub Sort_File_Approx {
                 } else {
                     $unicyclized4_full_final_lengths{$numbers{stepsynth_fwd}.$numbers{variable_fwd}.$numbers{helical_fwd}}++;
                 }
-                my $short_size = [$numbers{stepsynth_fwd} + $numbers{variable_fwd} + $numbers{helical_fwd} + $options{spacer}];
-                        for my $shortsize (@{$short_size}) {
+                my $short_size = [($numbers{stepsynth_fwd} + $numbers{variable_fwd} + $numbers{helical_fwd} + $options{spacer})];
+                for my $shortsize (@{$short_size}) {
                     if (!defined($unicyclized4_final_lengths{$shortsize})) {
                         $unicyclized4_final_lengths{$shortsize} = 0;
                     }
                 }
-                my $full_size = [$numbers{stepsynth_fwd}.$numbers{variable_fwd}.$numbers{helical_fwd}];
-                        for my $fullsize (@{$full_size}) {
+                my $full_size = [($numbers{stepsynth_fwd}.$numbers{variable_fwd}.$numbers{helical_fwd})];
+                for my $fullsize (@{$full_size}) {
                     if (!defined($unicyclized4_full_final_lengths{$fullsize})) {
                         $unicyclized4_full_final_lengths{$fullsize} = 0;
                     }
