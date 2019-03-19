@@ -466,7 +466,7 @@ sub Sort_File_Approx {
         my $stepsynthrev = 0;
         my $type = "yes";
         ## set hashes to zero
-        my $short_size = [($numbers{stepsynth_fwd} + $numbers{variable_fwd} + $numbers{helical_fwd} + $options{spacer})];
+        my $short_size = [119..219];
         for my $shortsize (@{$short_size}) {
                 $unicyclized4_final_lengths{$shortsize} = 0;
         }
