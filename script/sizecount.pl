@@ -495,12 +495,12 @@ sub Sort_File_Approx {
         }
         ## set hashes to zero for full name if no molecule was found of that name
         ## this is not currently working, full_size and frag_full are not making hashes that I want them to
-        my $step_sizes = [(047, 077, 107)];
+        my $stepsizes = [047,077,107];
         print $step_sizes;
-        my $var_sizes = [(00..30)];
-        my $hel_sizes = [(00..10)];
-        my $full_size = [(@{$step_sizes}.@{$var_sizes}.@{$hel_sizes})];
-        for my $fullsize (@{$full_size}) {
+        my $varsizes = [00..30];
+        my $helsizes = [00..10];
+        my $fullsizes = [(@{$stepsizes}.@{$varsizes}.@{$helsizes})];
+        for my $fullsize (@{$fullsizes}) {
             if (!defined($unicyclized4_full_final_lengths{$fullsize})) {
                 $unicyclized4_full_final_lengths{$fullsize} = 0;
             }
@@ -520,8 +520,8 @@ sub Sort_File_Approx {
                 $bicyclized5_full_final_lengths{$fullsize} = 0;
             }
         }
-        my $frag_full = [(@{$var_sizes}.@{$hel_sizes})];
-        for my $fragfull (@{$frag_full}) {
+        my $fragsizes = [(@{$varsizes}.@{$helsizes})];
+        for my $fragfull (@{$fragsizes}) {
             if (!defined($bicyclized5_frag_final_lengths{$fragfull})) {
                 $bicyclized5_frag_final_lengths{$fragfull} = 0;
             }
