@@ -517,7 +517,7 @@ sub Sort_File_Approx {
             }
         }
         my $frag_full = [($numbers{variable_fwd}.$numbers{helical_fwd})];
-        for my $fragfull (@{frag_full}) {
+        for my $fragfull (@{$frag_full}) {
             if (!defined($bicyclized5_frag_final_lengths{$fragfull})) {
                 $bicyclized5_frag_final_lengths{$fragfull} = 0;
             }
