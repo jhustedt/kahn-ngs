@@ -498,7 +498,10 @@ sub Sort_File_Approx {
         my $step_sizes = [047,077,107];
         my $var_sizes = [00..30];
         my $hel_sizes = [00..10];
-        my $full_size = [@{$step_sizes.$var_sizes.$hel_sizes}];
+        foreach my $frag_full (@{$hel_sizes}) {
+            $var_sizes.$hel_sizes;
+        }
+        my $full_size = [($step_sizes.$var_sizes.$hel_sizes)];
         for my $fullsize (@{$full_size}) {
             if (!defined($unicyclized4_full_final_lengths{$fullsize})) {
                 $unicyclized4_full_final_lengths{$fullsize} = 0;
@@ -519,7 +522,7 @@ sub Sort_File_Approx {
                 $bicyclized5_full_final_lengths{$fullsize} = 0;
             }
         }
-        my $frag_full = [($numbers{variable_fwd}.$numbers{helical_fwd})];
+      # my $frag_full = [($numbers{variable_fwd}.$numbers{helical_fwd})];
         for my $fragfull (@{$frag_full}) {
             if (!defined($bicyclized5_frag_final_lengths{$fragfull})) {
                 $bicyclized5_frag_final_lengths{$fragfull} = 0;
