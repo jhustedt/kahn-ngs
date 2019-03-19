@@ -497,16 +497,46 @@ sub Sort_File_Approx {
         ## set hashes to zero for full name if no molecule was found of that name
         ## this is not currently working, full_sizes and frag_full are not making hashes that I want them to
         my $step_sizes = ['047','077','107'];
-      # my $var_sizes = sprintf("$02d",00..30);
         my $var_sizes = ['00','01','02','03','04','05','06','07','08','09',10..30];
         my $hel_sizes = ['00','01','02','03','04','05','06','07','08','09','10'];
-        my %frag_full = ();
-        my %full_sizes = ();
-      # print "@{$hel_sizes}\n";
-      # print "@{$var_sizes}\n";
-      # print "@{$step_sizes}\n";
-        my $full_sizes = [@{$step_sizes}.@{$var_sizes}.@{$hel_sizes}];
-      # print "@{$full_sizes}\n";
+        my $full_sizes = {};
+        for my $s (@{$step_sizes}) {
+            if (!defined($full_sizes->{$s})) {
+                $full_sizes->{$s}={};
+            } else {
+                for my $v (@{$var_sizes}) {
+                    if (!defined($full_sizes->{$s}->{$v})) {
+                        $full_sizes->{$s}->{$v}={};
+                    }
+                }
+            } else {
+                for my $h (@{$hel_sizes}) {
+                        $full_sizes->{$s}->{$v}->{$h}=0;
+                }
+            }
+        }
+      ## possible other method
+      #my %helicalsizes = ();
+      #foreach my $h (@{$hel_sizes}) {
+      #     $helicalsizes{$h} = 0;
+      # }
+      # my %variablesizes = ();
+      # foreach my $v (@{$var_sizes}) {
+      #     $variablesizes{$v} = ();
+      # }
+      # my %full_sizes = {};
+      # foreach my $s (@{$step_sizes}) {
+      #     $full_sizes->{$s} = {};
+      # }
+      # foreach my $s (@{$step_sizes}) {
+      #     my %new_variablesizes = %variablesizes;
+      #     $full_sizes->{$s} = \%new_variablesizes;
+      #     foreach my $v (@{$var_sizes}) {
+      #         my %new_helicalsizes = %helicalsizes;
+      #         $full_sizes->{$s}->{$v} = \%new_helicalsizes;
+      # }
+        print "@{$full_sizes}\n";
+      # my $full_sizes = [@{$step_sizes}.@{$var_sizes}.@{$hel_sizes}];
         for my $fullsize (@{$full_sizes}) {
             if (!defined($unicyclized4_full_final_lengths{$fullsize})) {
                 $unicyclized4_full_final_lengths{$fullsize} = 0;
