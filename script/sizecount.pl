@@ -498,7 +498,8 @@ sub Sort_File_Approx {
         my $stepsizes = ['047','077','107'];
         my $varsizes = [00..30];
         my $helsizes = [00..10];
-        print $helsizes;
+      print $stepsizes;
+      print $helsizes;
         my $fullsizes = [(@{$stepsizes}.@{$varsizes}.@{$helsizes})];
         for my $fullsize (@{$fullsizes}) {
             if (!defined($unicyclized4_full_final_lengths{$fullsize})) {
