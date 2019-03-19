@@ -498,8 +498,8 @@ sub Sort_File_Approx {
         my $step_sizes = [047,077,107];
         my $var_sizes = [00..30];
         my $hel_sizes = [00..10];
-        foreach my $frag_full (@{$hel_sizes}) {
-            $var_sizes.$hel_sizes;
+        foreach (@{$hel_sizes}) {
+            my $frag_full = $var_sizes.$hel_sizes;
         }
         my $full_size = [($step_sizes.$var_sizes.$hel_sizes)];
         for my $fullsize (@{$full_size}) {
