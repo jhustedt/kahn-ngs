@@ -560,10 +560,10 @@ sub Sort_File_Approx {
                 } else {
                     $unicyclized4_final_lengths{$final_size}++;
                 }
-                if (!defined($unicyclized4_full_final_lengths{$numbers{stepsynth_fwd}.",".$numbers{variable_fwd}.",".$numbers{helical_fwd}})) {
+                if (!defined($unicyclized4_full_final_lengths{$numbers{stepsynth_fwd}.','.$numbers{variable_fwd}.','.$numbers{helical_fwd}})) {
                     $unicyclized4_full_final_lengths{$numbers{stepsynth_fwd}.$numbers{variable_fwd}.$numbers{helical_fwd}} = 1;
                 } else {
-                    $unicyclized4_full_final_lengths{$numbers{stepsynth_fwd}.",".$numbers{variable_fwd}.",".$numbers{helical_fwd}}++;
+                    $unicyclized4_full_final_lengths{$numbers{stepsynth_fwd}.','.$numbers{variable_fwd}.','.$numbers{helical_fwd}}++;
                 }
                 ## if stepsynth & stepcyc do not match, but the order is still the same, this is a bimolecular A to B cyclization
             } elsif ($positions{stepcyc_fwd} < $positions{helical_fwd} &&
