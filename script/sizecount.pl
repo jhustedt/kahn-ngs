@@ -488,10 +488,9 @@ sub Sort_File_Approx {
             }
         }
         my $frag_size = ['00','01','02','03','04','05','06','07','08','09',10..40];
-        # print "@{$frag_size}\n";
         for my $fragsize (@{$frag_size}) {
-            if (!defined($bicyclized5_final_lengths{$fragsize})) {
-                $bicyclized5_final_lengths{$fragsize} = 0;
+            if (!defined($bicyclized5_final_lengths{"0".$fragsize})) {
+                $bicyclized5_final_lengths{"0".$fragsize} = 0;
             }
         }
         ## set hashes to zero for full name if no molecule was found of that name
@@ -499,45 +498,23 @@ sub Sort_File_Approx {
         my $step_sizes = ['047','077','107'];
         my $var_sizes = ['00','01','02','03','04','05','06','07','08','09',10..30];
         my $hel_sizes = ['00','01','02','03','04','05','06','07','08','09','10'];
-        my $full_sizes = {};
-        for my $s (@{$step_sizes}) {
-            if (!defined($full_sizes->{$s})) {
-                $full_sizes->{$s}={};
-            } else {
-                for my $v (@{$var_sizes}) {
-                    if (!defined($full_sizes->{$s}->{$v})) {
-                        $full_sizes->{$s}->{$v}={};
-                    }
-                }
-            } else {
-                for my $h (@{$hel_sizes}) {
-                        $full_sizes->{$s}->{$v}->{$h}=0;
+        my @full_sizes = ();
+        foreach my $s (@{$step_sizes}) {
+            foreach my $v (@{$var_sizes}) {
+                foreach my $h (@{$hel_sizes}) {
+                    my $entry = qq"${s}${v}${h}";
+                    push (@full_sizes,$entry);
                 }
             }
         }
-      ## possible other method
-      #my %helicalsizes = ();
-      #foreach my $h (@{$hel_sizes}) {
-      #     $helicalsizes{$h} = 0;
-      # }
-      # my %variablesizes = ();
-      # foreach my $v (@{$var_sizes}) {
-      #     $variablesizes{$v} = ();
-      # }
-      # my %full_sizes = {};
-      # foreach my $s (@{$step_sizes}) {
-      #     $full_sizes->{$s} = {};
-      # }
-      # foreach my $s (@{$step_sizes}) {
-      #     my %new_variablesizes = %variablesizes;
-      #     $full_sizes->{$s} = \%new_variablesizes;
-      #     foreach my $v (@{$var_sizes}) {
-      #         my %new_helicalsizes = %helicalsizes;
-      #         $full_sizes->{$s}->{$v} = \%new_helicalsizes;
-      # }
-        print "@{$full_sizes}\n";
-      # my $full_sizes = [@{$step_sizes}.@{$var_sizes}.@{$hel_sizes}];
-        for my $fullsize (@{$full_sizes}) {
+        my @frag_full = ();
+        foreach my $v (@{$var_sizes}) {
+            foreach my $h (@{$hel_sizes}) {
+                my $entry = qq"${v}${h}";
+                push (@frag_full,$entry);
+            }
+        }
+        foreach my $fullsize (@{full_sizes}) {
             if (!defined($unicyclized4_full_final_lengths{$fullsize})) {
                 $unicyclized4_full_final_lengths{$fullsize} = 0;
             }
@@ -557,8 +534,7 @@ sub Sort_File_Approx {
                 $bicyclized5_full_final_lengths{$fullsize} = 0;
             }
         }
-        my $frag_full = [@{$var_sizes}.@{$hel_sizes}];
-        for my $fragfull (@{$frag_full}) {
+        for my $fragfull (@{frag_full}) {
             if (!defined($bicyclized5_frag_final_lengths{$fragfull})) {
                 $bicyclized5_frag_final_lengths{$fragfull} = 0;
             }
