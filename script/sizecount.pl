@@ -952,8 +952,8 @@ sub Sort_File_Approx {
                 } else {
                     $bicyclized6_final_lengths{$final_bi6_rev_size}++;
                 }
-                if (!defined($bicyclized6_full_final_lengths{$numbers{stepsynth_rev}.','.$numbers{variable_rev}.','.$numbers{helical_rev}})) {
-                    $bicyclized6_full_final_lengths{$numbers{stepsynth_rev}.','.$numbers{variable_rev}.','.$numbers{helical_rev}} = 1;
+                if (!defined($bicyclized6_full_final_lengths{numbers{$stepsynth_rev}.','.$numbers{$variable_rev}.','.$numbers{helical_rev}})) {
+                    $bicyclized6_full_final_lengths{$numbersstepsynth_rev}.','.$numbers{variable_rev}.','.$numbers{helical_rev}} = 1;
                 } else {
                     $bicyclized6_full_final_lengths{$numbers{stepsynth_rev}.','.$numbers{variable_rev}.','.$numbers{helical_rev}}++;
                 }
@@ -1320,7 +1320,7 @@ sub End_Handler {
         }
     }
     foreach my $k (sort keys %bicyclized6_full_final_lengths) {
-        print $bicyc6full_csv "$k,bicyclized6_full_final_lengths{$k}\n";
+        print $bicyc6full_csv "$k,$bicyclized6_full_final_lengths{$k}\n";
     }
     print $log "${found_six_unknown} reads had six hits and were unknown\n";
     print $log "${found_two_bi} reads had two hits and were bimolecular:\n";
