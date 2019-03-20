@@ -952,8 +952,8 @@ sub Sort_File_Approx {
                 } else {
                     $bicyclized6_final_lengths{$final_bi6_rev_size}++;
                 }
-                if (!defined($bicyclized6_full_final_lengths{numbers{$stepsynth_rev}.','.$numbers{$variable_rev}.','.$numbers{helical_rev}})) {
-                    $bicyclized6_full_final_lengths{$numbersstepsynth_rev}.','.$numbers{variable_rev}.','.$numbers{helical_rev}} = 1;
+                if (!defined($bicyclized6_full_final_lengths{$numbers{stepsynth_rev}.','.$numbers{variable_rev}.','.$numbers{helical_rev}})) {
+                    $bicyclized6_full_final_lengths{$numbers{stepsynth_rev}.','.$numbers{variable_rev}.','.$numbers{helical_rev}} = 1;
                 } else {
                     $bicyclized6_full_final_lengths{$numbers{stepsynth_rev}.','.$numbers{variable_rev}.','.$numbers{helical_rev}}++;
                 }
