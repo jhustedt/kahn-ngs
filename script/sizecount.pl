@@ -23,8 +23,9 @@ $SIG{TERM} = \&End_Handler;
 
 =head1 NAME
 
-  sizecount.pl - A writeall script to sort sequences by index and infer the
-    sizes of the template DNA.
+  sizecount.pl - A writeall script to sort sequences by user index
+    and infer the sizes of the template DNA in a ring closure
+    experiment.
 
 =head1 SYNOPSIS
 
@@ -47,9 +48,7 @@ $SIG{TERM} = \&End_Handler;
 
 =head1 DESCRIPTION
 
-  This was originally a demultiplexer for TNSeq data, which has a very specific and
-  illumina-incompatible (bcl2fastq) format.  It was slightly reformatted to match
-  the following query:
+ This script was adapted from work by Dr. Ashton Trey Belew: https://github.com/abelew
  
 =cut
 
