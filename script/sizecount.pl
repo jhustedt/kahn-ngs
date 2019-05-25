@@ -28,7 +28,7 @@ $SIG{TERM} = \&End_Handler;
 
 =head1 SYNOPSIS
 
-  This script only has a few useful options:
+  This script has a few useful options:
  --index  : The file defining the search strings and output files.
  --input  : Either a filename or directory containing the (relatively) raw
     fastq data.
@@ -36,99 +36,20 @@ $SIG{TERM} = \&End_Handler;
     and a summary file.
  --outfastq : Output fastq file, by default this is placed into the output
     directory. File extension not necessary.
- --substitution : String::Approx (Levenshtein) substitution distance, default is 0 (perfect match)
+ --substitution : String::Approx (Levenshtein) substitution distance, default
+    is 0 (perfect match)
  --insertion: Levenshtein insertion distance
  --deletion: Levenshtein deletion distance
  --spacer : specify spacer length (default 72)
  --debug  : Print a bunch of debugging output
+ All of the output scripts have default names, any individual name can be changed
+ as an option, these are not listed here for brevity.
 
 =head1 DESCRIPTION
 
   This was originally a demultiplexer for TNSeq data, which has a very specific and
   illumina-incompatible (bcl2fastq) format.  It was slightly reformatted to match
   the following query:
-
-  1. The primary goal is to observe how many of every size DNA template was incorporated into
-     a sequencing library.  The implicit inference: when (DNA-size % ~10), the energetic
-     requirements for a DNA to loop back on itself decrease, increasing the likelihood that
-     the molecule can cyclize and therefore end up in the sequencing library.  Ergo, more
-     counts of a particular size is inversely related to the energy requirement.
-  2. The input molecules were designed so that each size is distinguishable by its sequence.
-  3. Four indices are used to distinguish molecule size (ranging 119-219 bp)
-  4. The important caveat: inter-molecular ligation is in a fight with intra-molecular ligation.
-     a. Ergo, we need to be aware of multiple indices for two reasons; first to tell the size
-        range, second because we need to be able to observe when size-a linearly ligates
-        to size-b and when size-a bimolecularly cyclizes with size-b.
-
-  Thus the original implementation is useful but not ideal and has been changed to do the
-  following:
-
-  1. Rather than just dump the sequences into separate files, use the comment field
-     to print the observed matches.
-  2. When it does decide to write output files, it should have some logic to know the range(s)
-     as well as the specific size(s) observed. The index file has been rewriten to include all
-     relevant information within a single index file (for each diferent index type).
-  3. Output a text file describing the number of observations of each-sized molecule that is
-     cyclized or not cyclized, when observed with the appropriate number of hits for a single
-     cycliztion event.
-  4. Output individual CSV files for each cyclization state.
-
- Updates for 2018-11-13
- 1) Verify that a sequence with three hits has the appropriate matching index before and after
-    the cyclization site (this will tell us that it was likely unimolecular).
-    a. added index sequences to allow for (1) via "stepsynth" and "stepcyc" implementation
-    b. add logic to check by looking at index numbers for stepsynth and stepcyc & verifying match
- 2) If a molecule is not unimolecular (as above) it is sorted into a bimolecular instead
-    a. done for 4 hit, needs to be done for 6 hit still
-    a. Does it matter that size-a ligated to size-b, or just that a molecule of each size
-       participated in a bimolecular reaction?
-
- Updates for 2018-11-28
- 1) Implemented amatch instead of direct string match for indices.
- 2) the index number associated with stepsynth & stepcyc is now capable of being called upon to reference
-    itself later for a logic check verifying they are the same index value.
-    a. logic check separating unimolecular (matching) and bimolecular (not matching) stepsynth & stepcyc
-
- Updates for 2018-11-29
- 1) fixed incorrect output sizes
- 2) altered String::Approx to function as aindex() if params set and as index() if no params set
-    a) this somewhat functions for aindex() but does NOT function for index()
-        -aindex() no longer allows for unwanted insertions or deletions, but is not finding every match
-         that it should
-
- Updates for 2018-12-02
- 1) aindex still is not finding what I would expect, but index is better
- 2) I have added counters for six hit bimolecular cyclization & two hit bimolecular cyclization.
-    a) I don't do anything with these other than count their existence.
- 3) I have added counters for excess hits and how many times they end up found.
-
- Updates for 2018-12-04
- 1) added logic for six hit bimolecular and two hit bimolecular
-    a) added logs for six hit and two hit bimolecular
- 2) separated logs for bimolecular products - 2 hit, 4 hit, and 6 hit are reported in separate csv files
-
- Updates for 2019-03-12
- 1) added matching for 3 hit unreacted (or dead end multimer).
- 2) added matching for 1 hit unreacted (or dead end multimer).
- 3) fixed 6-hit directionality
- 4) added five hit bimolecular matching
- 5) index file numbers changed for size class variant indices to include a leading zero in 47 and 77
-    this is to make nomenclature uniform, all hits should report out as 3 digits size class, 2 digits
-    variable index, 2 digits helical index. e.g. "047,30,10" - this allows for the index file input to take numbers directly and not need to reformat them here.
- 6) full size description csv files will be generated with hits asigned to each index as approrpiate
-
-  Updates for 2019-03-19
- 5 & 6 from 2019-03-12 are now behaving correctly.
- 
- Updates for 2019-03-21
- 1) I have added sorting for more different classes that were previously not sorted out, these include:
-    a) four hit library fragments: variable-helical-helical-variable (this will occur if two variable side library fagments ligate to one another but do not ligate at the synthesis junction)
-    b) four hit library fragments: stepsynth-stepcyc-stepcyc-stepsynth (this will occur if two library fragments step side ligate to one anther but do not cut with SspI or ligate at the synthesis junction)
-    c) one hit library frag synth size (this will occur if a step side library fragment did not react and was cut with SspI)
-    d) two hit step side library fragments (step side library fragments that did not react on either side and were not cut with SspI)
-    e) two hit variable side library fragments (variable library fragments that did not react on either side)
- 2) updated the summary file to remove useless information
- 3) updated some of the comments throughout this file
  
 =cut
 
@@ -196,8 +117,7 @@ my %sixes = (
 my %sevenup = (
     sum => 0, helical_fwd => 0, stepcyc_fwd => 0, variable_fwd => 0, stepsynth_fwd => 0,
     helical_rev => 0, stepcyc_rev => 0, variable_rev => 0, stepsynth_rev => 0,);
-## Here I set up tags for counting all when all four are found unimolecular, when all four are found bimolecular, when all six are found biomolecular, and appropriate final lengths outputs for each
-## currently this works by looking at the total summed length and not the individual makeup of the molecule.
+## set up tags for counting and appropriate final lengths outputs for each match
 my $datestring = localtime();
 my $found_all_four = 0;
 my $found_four_uni = 0;
@@ -301,7 +221,7 @@ my $onehitlincyc_csv = new FileHandle(">$options{outdir}/$options{onehitlincyc_c
 my $onehitlinsynth_csv = new FileHandle(">$options{outdir}/$options{onehitlinsynth_csv}");
 my $varlibfull_csv = new FileHandle(">$options{outdir}/$options{varlibfull_csv}");
 my $steplibfull_csv = new FileHandle(">$options{outdir}/$options{steplibfull_csv}");
-## This checks to see that the options for index, input, and output directory exist and provides an error if they do not.
+
 if (!-r $options{input}) {
     die("The input file: $options{input} does not exist.");
 }
@@ -312,8 +232,7 @@ if (!-d $options{outdir}) {
     die("The output directory $options{outdir} does not exist.");
 }
 my $index_hash = Read_indices();
-## look at input file, if file, read, if dir, look in dir and read internal files
-## Create an empty output fastq file into which we will copy the extant data and new fun comments.
+
 my $abs_input = File::Spec->rel2abs($options{input});
 my $fastq_output = qq"$options{outdir}/$options{outfastq}.fastq.gz";
 my $abs_output = File::Spec->rel2abs($fastq_output);
@@ -321,8 +240,6 @@ my $out;
 if ($abs_input eq $abs_output) {
     die("The input file and output file are the same.");
 } else {
-    ## generation of fastq file from another of Trey's scripts:
-    ## my $with_ta = FileHandle->new("| gzip -f -9 > ${input_base}_ta.fastq.gz");
     $out = FileHandle->new("| gzip -f -9 > $fastq_output");
 }
 my $reads;
@@ -341,14 +258,14 @@ if (-f $options{input}) {
 } else {
     die("I need a file/directory containing some sequence.") unless($options{input});
 }
-## general output, tells number of reads that went to each index
 End_Handler();
 
 =item Sort_File_Approx
 
-  This function should look through every sequence for a reasonable match to
-  the available indices.  If it gets some hits, record them.  If they are ambiguous,
-  this should probably return where the possibilities lie.  If no match, return that.
+  This function should look through every sequence for a reasonable
+  match to the available indices. If it gets some hits, record them.
+  If they are ambiguous, this should return where the possibilities
+  lie. If no match, return that.
 
 =cut
 
@@ -362,7 +279,6 @@ sub Sort_File_Approx {
     my $inputted = FileHandle->new("zless $args{input} 2>/dev/null |");
     my $in = Bio::SeqIO->new(-fh => $inputted, -format => 'Fastq');
     my $count = 0;
-    ## Here we define the order of lines within the fastq file and the contents of the comments.
   READS: while (my $in_seq = $in->next_dataset()) {
         $count++;
         $observed_reads++;
@@ -403,9 +319,7 @@ sub Sort_File_Approx {
             ## direct sequence match, without error
             ## set up array for parameters for string::approx
             my $params = [ "I$options{insertion}","D$options{deletion}","S$options{substitution}" ];
-            ##set up array for starts
             my @starts = ();
-            ##looks at parameters & if not defined, continue with direct match, if params exist, do aindex
             if ( !defined $options{insertion} && !defined $options{deletion} &&
                     !defined $options{substitution} ) {
                 $sequence =~ m/$index/;
@@ -421,7 +335,12 @@ sub Sort_File_Approx {
                         print "TESTME: @starts\n";
                     }
                     $comment .= "$st:$info->{name}:$info->{number}:$info->{direction} ";
-                    ## where "st" is position within read, info name and number identify the index, and direction identifies fwd or rev
+                    ## where "st" is position within read, info name
+                    ## and number identify the index, and direction
+                    ## identifies fwd or rev.
+                    ## fwd & rev needed as adapter attachment to
+                    ## flow cell is random & can occur in either
+                    ## direction.
                     if ($info->{name} eq 'helical' && $info->{direction} eq 'fwd') {
                         $observations{helical_fwd}++;
                         $observe{helical_fwd}++;
@@ -521,15 +440,19 @@ sub Sort_File_Approx {
         for my $fragsize (@{$frag_size}) {
             if (!defined($bicyclized5_final_lengths{"0".$fragsize})) {
                 $bicyclized5_final_lengths{"0".$fragsize} = 0;
-                # when pre-populating this hash I am doing so with a leading zero such that the values are three digits, this allows for them to end in the same hash as the regular size library as the range of sizes here is 000-040 and the regular size library is 119-219.
-                # if a different size library is being used this should be changed to go to a different hash entirely
+                # when pre-populating this hash I am doing so with
+                # a leading zero such that the values are three digits,
+                # this allows for them to end in the same hash as the
+                # regular size library as the range of sizes here is
+                # 000-040 and the regular size library is 119-219.
+                # if a different size library is being used this
+                # should be changed to a different hash entirely
             }
             if (!defined($bicyclized4_var_lib_final_lengths{"0".$fragsize})) {
                 $bicyclized4_var_lib_final_lengths{"0".$fragsize} = 0;
             }
         }
         ## set hashes to zero for full name if no molecule was found of that name
-        ## this is not currently working, full_sizes and frag_full are not making hashes that I want them to
         my $step_sizes = ['047','077','107'];
         my $var_sizes = ['00','01','02','03','04','05','06','07','08','09',10..30];
         my $hel_sizes = ['00','01','02','03','04','05','06','07','08','09','10'];
@@ -576,9 +499,11 @@ sub Sort_File_Approx {
             if (!defined($bicyclized4_var_lib_full_final_lengths{$fragfull})) {
                 $bicyclized4_var_lib_full_final_lengths{$fragfull} = 0;
             }
+            if (!defined($bi2_full_lib_lengths{$fragfull})) {
+                $bi2_full_lib_lengths{$fragfull} = 0;
+            }
         }
-        ## Here we look only at files that have cyclized, count them, and place the count into its own csv
-        ## first check that four indices are observed & they are the four we expect to see for a unimolecular cyclization
+        ## start looking for matches & assigning them
         if ($observed_indices == 4 && $observe{stepsynth_fwd} > 0 && $observe{helical_fwd} > 0 &&
                 $observe{stepcyc_fwd} > 0 && $observe{variable_fwd} > 0) {
             $fwd_valid = 1;
@@ -596,10 +521,8 @@ sub Sort_File_Approx {
                     $stepsynth = $name;
                 }
             }
-            ## I need a means of doing this that separates out into fwd/rev for bimolecular A-A
             my $final_size = $options{spacer} + $helical + $stepsynth + $variable;
             $comment .= "final size: $final_size ";
-            ## Add a check for cyclized vs. not vs. unknown.
             if ($positions{stepcyc_fwd} < $positions{helical_fwd} &&
                     $positions{helical_fwd} < $positions{variable_fwd} &&
                     $positions{variable_fwd} < $positions{stepsynth_fwd} &&
@@ -616,7 +539,6 @@ sub Sort_File_Approx {
                 } else {
                     $unicyclized4_full_final_lengths{$numbers{stepsynth_fwd}.','.$numbers{variable_fwd}.','.$numbers{helical_fwd}}++;
                 }
-                ## if stepsynth & stepcyc do not match, but the order is still the same, this is a bimolecular A to B cyclization
             } elsif ($positions{stepcyc_fwd} < $positions{helical_fwd} &&
                          $positions{helical_fwd} < $positions{variable_fwd} &&
                          $positions{variable_fwd} < $positions{stepsynth_fwd} &&
@@ -633,7 +555,6 @@ sub Sort_File_Approx {
                 } else {
                     $bicyclized4_full_final_lengths{$numbers{stepsynth_fwd}.','.$numbers{variable_fwd}.','.$numbers{helical_fwd}}++;
                 }
-                ## if order is that of initial library we count up linear molecules
             } elsif ($positions{helical_fwd} < $positions{variable_fwd} &&
                          $positions{variable_fwd} < $positions{stepsynth_fwd} &&
                          $positions{stepsynth_fwd} < $positions{stepcyc_fwd}) {
@@ -653,7 +574,6 @@ sub Sort_File_Approx {
                 $type = "unknown4hit";
                 $found_four_unknown++;
             }
-            ## here we append the status of "cyclized" to the comment line, options for 4 hits are: unimolecular, bimolecular-4, linear, and unknown
             $comment .= "type: ${type} ";
         }
         ## now we look at the same thing as above, but for reverse molecules
@@ -676,7 +596,6 @@ sub Sort_File_Approx {
             }
             my $final_size = $options{spacer} + $helical + $stepsynth + $variable;
             $comment .= "final size: $final_size ";
-            ## Add a check for cyclized vs. not vs. unknown.
             if ($positions{stepcyc_rev} > $positions{helical_rev} &&
                     $positions{helical_rev} > $positions{variable_rev} &&
                     $positions{variable_rev} > $positions{stepsynth_rev} &&
@@ -693,7 +612,6 @@ sub Sort_File_Approx {
                 } else {
                     $unicyclized4_full_final_lengths{$numbers{stepsynth_rev}.','.$numbers{variable_rev}.','.$numbers{helical_rev}}++;
                 }
-                ## if stepsynth & stepcyc do not match, but the order is still the same, this is a bimolecular A-B ligation
             } elsif ($positions{stepcyc_rev} > $positions{helical_rev} &&
                          $positions{helical_rev} > $positions{variable_rev} &&
                          $positions{variable_rev} > $positions{stepsynth_rev} &&
@@ -710,7 +628,6 @@ sub Sort_File_Approx {
                 } else {
                     $bicyclized4_full_final_lengths{$numbers{stepsynth_rev}.','.$numbers{variable_rev}.','.$numbers{helical_rev}}++;
                 }
-            ## if order is that of initial library we count up linear molecules
             } elsif ($positions{helical_rev} > $positions{variable_rev} &&
                          $positions{variable_rev} > $positions{stepsynth_rev} &&
                          $positions{stepsynth_rev} > $positions{stepcyc_rev}) {
@@ -732,7 +649,8 @@ sub Sort_File_Approx {
             }
             $comment .= "type: ${type} ";
         }
-        ## four hits that come purely from library fragments that did not have a live BstEII side
+        ## four hits that come purely from library fragments that did not
+        ## have a live BstEII (synthesis junction) side
         if ($observed_indices == 4 && $observe{helical_fwd} > 0 && $observe{helical_rev} > 0 && $observe{variable_fwd} > 0 && $observe{variable_rev} > 0) {
             my @pieces = split(/\s+/, $comment);
             for my $p (@pieces) {
@@ -836,7 +754,6 @@ sub Sort_File_Approx {
             }
             $comment .= "$type: ${type} ";
         }
-        ## looking at triple index hits
         if ($observed_indices == 3 && $observe{helical_fwd} > 0 && $observe{variable_fwd} > 0 && $observe{stepsynth_fwd} > 0) {
             my @pieces = split(/\s+/, $comment);
             for my $p (@pieces) {
@@ -905,7 +822,6 @@ sub Sort_File_Approx {
             }
             $comment .= "type: ${type} ";
         }
-        ## looking at single index hits
         if ($observed_indices == 1 && $observe{stepcyc_fwd} > 0) {
             my @pieces = split(/\s+/, $comment);
             for my $p (@pieces) {
@@ -985,7 +901,8 @@ sub Sort_File_Approx {
         ## for 5 I am looking at a set with three and a fragment this can be:
         ## stepsynth_rev < variable_rev < helical_rev < helical_fwd < variable_fwd
         ##                 variable_rev < helical_rev < helical_fwd < variable_fwd < stepsynth_fwd
-        ## these should only exist in the event that a library variable fragment found a full molecule and multimerized
+        ## these should only exist in the event that a library variable fragment
+        ## found a full molecule and multimerized
         if ($observed_indices == 5 && $observe{stepsynth_fwd} > 0 && $observe{helical_fwd} > 0 &&
                 $observe{variable_fwd} > 0 && $observe{helical_rev} > 0 && $observe{variable_rev} > 0) {
             my @pieces = split(/\s+/, $comment);
@@ -1004,8 +921,15 @@ sub Sort_File_Approx {
                 }
             }
             my $final_bi5_fwd_size = $options{spacer} + $stepsynthfwd + $variablefwd + $helicalfwd;
-            # the reverse size is variable plus helical, but this gives a minimum "size" of "0" up to "40" - this is not technically the size, the size is technically 072-112
-            # I have chosen to leave this as the size shown because it reflects a fragment and I want it to be clear that these fragments should not be capable of cyclization and in theory should only appear in a dead linear multimer (so the size is less relevant so much as knowing that a molecule participated in generation of a multimer) and which particular molecule it was.
+            ## the reverse size is variable plus helical, but this
+            ## gives a minimum "size" of "0" up to "40" - this is
+            ## not technically the size, the size is actually 072-112
+            # I have chosen to leave this as the size shown because it
+            # reflects a fragment and I want it to be clear that these
+            # fragments should not be capable of cyclization., in theory
+            # only appearing in a dead linear multimer (so the size is
+            # less relevant so much as knowing that a molecule participated
+            # in generation of a multimer) and which particular molecule it was.
             my $final_bi5_rev_size = $variablerev + $helicalrev;
             if ($positions{variable_rev} < $positions{helical_rev} &&
                     $positions{helical_rev} < $positions{helical_fwd} &&
@@ -1019,7 +943,10 @@ sub Sort_File_Approx {
                 } else {
                     $bicyclized5_final_lengths{$final_bi5_fwd_size}++;
                 }
-                # for the fragmented size I need it to have three digits like the rest of the library, for values 0..9 prepend two leading 0s, else 10..40 prepend one leading zero.
+                # for the fragmented size I need it to have three
+                # digits like the rest of the library, for values
+                # 0..9 prepend two leading 0s, else 10..40 prepend
+                # one leading zero.
                 if ($final_bi5_rev_size < 10) {
                     if (!defined($bicyclized5_final_lengths{'00'.$final_bi5_rev_size})) {
                         $bicyclized5_final_lengths{'00'.$final_bi5_rev_size} = 1;
@@ -1166,7 +1093,7 @@ sub Sort_File_Approx {
             }
             $comment .= "type: ${type} ";
         }
-        ## Scan for bimolecular products from B-B ligations
+        ##
         if ($observed_indices == 2 && $observe{stepcyc_fwd} > 0 && $observe{stepcyc_rev} > 0) {
             my @pieces = split(/\s+/, $comment);
             for my $p (@pieces) {
@@ -1182,7 +1109,10 @@ sub Sort_File_Approx {
                 $found_two_bi++;
                 $type = "bimolecular-2";
                 $comment .= "final size: $final_bi2_size ";
-                # truthfully the final size here is useless for our current library size given the separated component counting below. I am leaving it in in case it becomes useful for future projects
+                # truthfully the final size here is useless for
+                # our current library size given the separated
+                # component counting below. I am leaving it
+                # in case it becomes useful for future projects
                 if (!defined($bicyclized2_final_lengths{$final_bi2_size})) {
                     $bicyclized2_final_lengths{$final_bi2_size} = 1;
                 } else {
@@ -1263,10 +1193,10 @@ sub Sort_File_Approx {
                 $found_two_lib_var++;
                 $type = "Variable-Component-2";
                 $comment .= "component size: $final_bi2_lib_size ";
-                if (!defined($bi2_full_lib_lengths{$numbers{variable_fwd}.'.'.$numbers{helical_fwd}})) {
-                    $bi2_full_lib_lengths{$numbers{variable_fwd}.'.'.$numbers{helical_fwd}} = 1;
+                if (!defined($bi2_full_lib_lengths{$numbers{variable_fwd}.','.$numbers{helical_fwd}})) {
+                    $bi2_full_lib_lengths{$numbers{variable_fwd}.','.$numbers{helical_fwd}} = 1;
                 } else {
-                    $bi2_full_lib_lengths{$numbers{variable_fwd}.'.'.$numbers{helical_fwd}}++;
+                    $bi2_full_lib_lengths{$numbers{variable_fwd}.','.$numbers{helical_fwd}}++;
                 }
             } else {
                 $type = "unknown2hit";
@@ -1288,19 +1218,17 @@ sub Sort_File_Approx {
                 $found_two_lib_var++;
                 $type = "Variable-Component-2";
                 $comment .= "component size: $final_bi2_lib_size ";
-                if (!defined($bi2_full_lib_lengths{$numbers{variable_rev}.'.'.$numbers{helical_fwd}})) {
-                    $bi2_full_lib_lengths{$numbers{variable_rev}.'.'.$numbers{helical_fwd}} = 1;
+                if (!defined($bi2_full_lib_lengths{$numbers{variable_rev}.','.$numbers{helical_fwd}})) {
+                    $bi2_full_lib_lengths{$numbers{variable_rev}.','.$numbers{helical_fwd}} = 1;
                 } else{
-                    $bi2_full_lib_lengths{$numbers{variable_rev}.'.'.$numbers{helical_fwd}}++;
+                    $bi2_full_lib_lengths{$numbers{variable_rev}.','.$numbers{helical_fwd}}++;
                 }
             } else {
                 $type = "unknown2hit";
             }
             $comment .= "type: ${type} ";
         }
-        ## append to the comment the number of observed indices.
         $comment .= "Count: $count  hits: ${observed_indices} ";
-        ## Increment the singles->sixes (& 7+) with the relevant observations.
         if ($observed_indices == 1) {
             $singles{sum}++;
             foreach my $k (keys %observe) {
@@ -1399,9 +1327,9 @@ sub Read_indices {
         $indices->{$index_sequence} = {
             name => $name,
             direction => $direction,
-            # I am formating each number to include three digits this is because my greatest size is three digits and I want everything to include all three (even if all zeros).
-            # I think I can get away with not using this given how I have the numbering laid out. It is already formatted as I want.
-            # number => sprintf("%03d",$number),
+            # I am formating each number to include three digits
+            # this is because my greatest size is three digits and
+            # I want everything to include all three (even if all zeros).
             number => $number,
             # original number input converted number to integer
             # number => int($number),
@@ -1432,11 +1360,9 @@ sub End_Handler {
     print $log "${observed_reads} reads were observed in total, of these:\n";
     foreach my $k (sort keys %observations) {
         if ($observations{$k} > 0 and $k ne 'sum') {
-            ## Here we print how many times each individual index class was observed (regardless of if any other indices were found within that sequence). An index class is either the large variable region, small (helical) variable region, or synthesis variable region.
             print $log "     The read type: ${k} was observed: $observations{$k} times.\n";
         }
     }
-    ## how many times single, double...seven+ index sequences were found & how many times individual index classes were found within them.
     if ($singles{sum} > 0) {
         print $log "$singles{sum} single-index reads were observed, including:\n";
         foreach my $k (sort keys %singles) {
@@ -1494,7 +1420,6 @@ sub End_Handler {
         }
     }
     print $log "\n";
-    # Print to the summary log the number of times each class is found, then to two separate csv files for each respective hash: size ("_final_lengths") or identity ("_full_final_lengths") based
     print $log "${found_one_lin_cyc} reads had a single hit and were stepcyc linear fragments\n";
     foreach my $k (sort keys %linear1_final_lengths_cyc) {
         print $onehitlincyc_csv "$k,$linear1_final_lengths_cyc{$k}\n";
@@ -1503,6 +1428,7 @@ sub End_Handler {
     foreach my $k (sort keys %linear1_final_lengths_synth) {
         print $onehitlinsynth_csv "$k,$linear1_final_lengths_synth{$k}\n";
     }
+    print $log "\n";
     print $log "${found_two_bi} reads had two hits and were bimolecular B-B\n";
     foreach my $k (sort keys %bicyclized2_final_lengths) {
         print $bicyc2_csv "$k,$bicyclized2_final_lengths{$k}\n";
@@ -1518,6 +1444,7 @@ sub End_Handler {
     foreach my $k (sort keys %bi2_full_step_lengths) {
         print $steplibfull_csv "$k,$bi2_full_step_lengths{$k}\n";
     }
+    print $log "\n";
     print $log "${found_three_lin} reads had three hits and were linear fragments stepsynth+variable+helical\n";
     foreach my $k (sort keys %linear3_final_lengths) {
         if ($k ne "$options{spacer}") {
@@ -1527,6 +1454,7 @@ sub End_Handler {
     foreach my $k (sort keys %linear3_full_final_lengths) {
         print $threehitlinfull_csv "$k,$linear3_full_final_lengths{$k}\n";
     }
+    print $log "\n";
     print $log "${found_four_uni} reads had four hits and were cyclized unimolecular\n";
     foreach my $k (sort keys %unicyclized4_final_lengths) {
         if ($k ne "$options{spacer}") {
@@ -1568,6 +1496,7 @@ sub End_Handler {
     foreach my $k (sort keys %bicyclized4_step_lib_full_final_lengths) {
         print $bicyc4steplibfull_csv "$k,$bicyclized4_step_lib_full_final_lengths{$k}\n";
     }
+    print $log "\n";
     print $log "${found_five_bi} reads had five hits and were bimolecular A-A\n";
     foreach my $k (sort keys %bicyclized5_final_lengths) {
         if ($k ne "$options{spacer}") {
@@ -1580,6 +1509,7 @@ sub End_Handler {
     foreach my $k (sort keys %bicyclized5_frag_final_lengths) {
         print $bicyc5frag_csv "$k,$bicyclized5_frag_final_lengths{$k}\n";
     }
+    print $log "\n";
     print $log "${found_six_bi} reads had six hits and were bimolecular A-A\n";
     foreach my $k (sort keys %bicyclized6_final_lengths) {
         if ($k ne "$options{spacer}") {
